@@ -11,18 +11,17 @@
 #ifndef MUDUO_NET_EVENTLOOP_H
 #define MUDUO_NET_EVENTLOOP_H
 
+#include <any>
 #include <atomic>
 #include <functional>
 #include <mutex>
 #include <vector>
 
-#include <boost/any.hpp>
-
-#include "muduo/base/CurrentThread.h"
-#include "muduo/base/noncopyable.h"
-#include "muduo/base/Timestamp.h"
-#include "muduo/net/Callbacks.h"
-#include "muduo/net/TimerId.h"
+#include <muduo/base/CurrentThread.h>
+#include <muduo/base/noncopyable.h>
+#include <muduo/base/Timestamp.h>
+#include <muduo/net/Callbacks.h>
+#include <muduo/net/TimerId.h>
 
 namespace muduo
 {
@@ -118,13 +117,13 @@ class EventLoop : noncopyable
   // bool callingPendingFunctors() const { return callingPendingFunctors_; }
   bool eventHandling() const { return eventHandling_; }
 
-  void setContext(const boost::any& context)
+  void setContext(const std::any& context)
   { context_ = context; }
 
-  const boost::any& getContext() const
+  const std::any& getContext() const
   { return context_; }
 
-  boost::any* getMutableContext()
+  std::any* getMutableContext()
   { return &context_; }
 
   static EventLoop* getEventLoopOfCurrentThread();
@@ -151,7 +150,7 @@ class EventLoop : noncopyable
   // unlike in TimerQueue, which is an internal class,
   // we don't expose Channel to client.
   std::unique_ptr<Channel> wakeupChannel_; // 处理自己事件的Channel
-  boost::any context_;
+  std::any context_;
 
   // scratch variables
   ChannelList activeChannels_; // poller返回的活动通道

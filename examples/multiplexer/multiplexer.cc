@@ -172,9 +172,9 @@ class MultiplexServer
     }
     else
     {
-      if (!conn->getContext().empty())
+      if (conn->getContext().has_value())
       {
-        int id = boost::any_cast<int>(conn->getContext());
+        int id = std::any_cast<int>(conn->getContext());
         assert(id > 0 && id <= kMaxConns);
         char buf[256];
         snprintf(buf, sizeof(buf), "CONN %d FROM %s IS DOWN\r\n",
@@ -201,9 +201,9 @@ class MultiplexServer
     size_t len = buf->readableBytes();
     transferred_ += len;
     receivedMessages_++;
-    if (!conn->getContext().empty())
+    if (conn->getContext().has_value())
     {
-      int id = boost::any_cast<int>(conn->getContext());
+      int id = std::any_cast<int>(conn->getContext());
       sendBackendBuffer(id, buf);
       // assert(buf->readableBytes() == 0);
     }

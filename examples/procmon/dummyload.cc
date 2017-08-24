@@ -8,6 +8,7 @@
 #include <atomic>
 #include <math.h>
 #include <stdio.h>
+#include <unistd.h>
 
 using namespace muduo;
 using namespace muduo::net;
