@@ -58,6 +58,7 @@ void benchmark()
 int main()
 {
   Timestamp now(Timestamp::now());
+  // 也可写作 Timestamp now = Timestamp::now();
   printf("%s\n", now.toString().c_str());
   passByValue(now);
   passByConstReference(now);

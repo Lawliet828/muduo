@@ -137,27 +137,27 @@ class EventLoop : noncopyable
 
   typedef std::vector<Channel*> ChannelList;
 
-  bool looping_; /* atomic */
-  std::atomic<bool> quit_;
-  bool eventHandling_; /* atomic */
-  bool callingPendingFunctors_; /* atomic */
+  bool looping_; /* atomic */ // 循环开启的标志位
+  std::atomic<bool> quit_; // 退出循环标志位
+  bool eventHandling_; /* atomic */ // 正在处理IO事件标志位
+  bool callingPendingFunctors_; /* atomic */ // 正在处理其他事件标志位
   int64_t iteration_;
-  const pid_t threadId_;
-  Timestamp pollReturnTime_;
-  std::unique_ptr<Poller> poller_;
-  std::unique_ptr<TimerQueue> timerQueue_;
+  const pid_t threadId_; // 创建EventLoop的线程Id
+  Timestamp pollReturnTime_; // 多路复用返回时间戳
+  std::unique_ptr<Poller> poller_; // 封装IO多路复用的类
+  std::unique_ptr<TimerQueue> timerQueue_; // 定时器队列
   int wakeupFd_;
   // unlike in TimerQueue, which is an internal class,
   // we don't expose Channel to client.
-  std::unique_ptr<Channel> wakeupChannel_;
+  std::unique_ptr<Channel> wakeupChannel_; // 处理自己事件的Channel
   boost::any context_;
 
   // scratch variables
-  ChannelList activeChannels_;
-  Channel* currentActiveChannel_;
+  ChannelList activeChannels_; // IO复用检测返回的活动通道集合
+  Channel* currentActiveChannel_; // 正在处理消息的Channel
 
   mutable MutexLock mutex_;
-  std::vector<Functor> pendingFunctors_ GUARDED_BY(mutex_);
+  std::vector<Functor> pendingFunctors_ GUARDED_BY(mutex_); // 自己设置的额外的处理函数集合
 };
 
 }  // namespace net

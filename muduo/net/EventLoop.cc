@@ -103,6 +103,7 @@ EventLoop::~EventLoop()
 void EventLoop::loop()
 {
   assert(!looping_);
+  // 事件循环必须在io线程执行 如果不在代表发生错误，直接退出程序。
   assertInLoopThread();
   looping_ = true;
   quit_ = false;  // FIXME: what if someone calls quit() before loop() ?
@@ -111,6 +112,7 @@ void EventLoop::loop()
   while (!quit_)
   {
     activeChannels_.clear();
+    // 调用poll返回活动的通道，有可能是唤醒返回的
     pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
     ++iteration_;
     if (Logger::logLevel() <= Logger::TRACE)
@@ -126,6 +128,7 @@ void EventLoop::loop()
     }
     currentActiveChannel_ = NULL;
     eventHandling_ = false;
+    // 这种设计使得IO线程也能执行一些计算任务，避免了IO线程在不忙时长期阻塞在IO multiplexing调用中
     doPendingFunctors();
   }
 
@@ -145,6 +148,10 @@ void EventLoop::quit()
   }
 }
 
+/**
+ * 外部通过runInloop给当前loop分配任务，在当前线程则直接执行，
+ * 其他线程分到任务队列，然后唤醒fd，之后再处理。
+ */
 void EventLoop::runInLoop(Functor cb)
 {
   if (isInLoopThread())

@@ -13,8 +13,8 @@ namespace muduo
 namespace CurrentThread
 {
   // internal
-  extern __thread int t_cachedTid;
-  extern __thread char t_tidString[32];
+  extern __thread int t_cachedTid;      // 线程tid的缓存
+  extern __thread char t_tidString[32]; // tid的字符串表示形式
   extern __thread int t_tidStringLength;
   extern __thread const char* t_threadName;
   void cacheTid();
