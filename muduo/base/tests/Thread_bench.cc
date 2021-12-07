@@ -1,10 +1,10 @@
-#include "muduo/base/Atomic.h"
 #include "muduo/base/BlockingQueue.h"
 #include "muduo/base/CurrentThread.h"
 #include "muduo/base/Mutex.h"
 #include "muduo/base/Thread.h"
 #include "muduo/base/Timestamp.h"
 
+#include <atomic>
 #include <map>
 #include <string>
 #include <vector>
@@ -15,13 +15,13 @@
 
 bool g_verbose = false;
 muduo::MutexLock g_mutex;
-muduo::AtomicInt32 g_count;
+std::atomic<int32_t> g_count{0};
 std::map<int, int> g_delays;
 
 void threadFunc()
 {
   //printf("tid=%d\n", muduo::CurrentThread::tid());
-  g_count.increment();
+  g_count++;
 }
 
 void threadFunc2(muduo::Timestamp start)
@@ -161,7 +161,7 @@ int main(int argc, char* argv[])
   printf("elapsed %.3f seconds, thread creation time %.3f us\n", timeUsed,
          timeUsed*1e6/kThreads);
   printf("number of created threads %d, g_count = %d\n",
-         muduo::Thread::numCreated(), g_count.get());
+         muduo::Thread::numCreated(), g_count.load());
 
   for (int i = 0; i < kThreads; ++i)
   {

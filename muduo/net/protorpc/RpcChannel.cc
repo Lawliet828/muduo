@@ -18,6 +18,7 @@ using namespace muduo::net;
 
 RpcChannel::RpcChannel()
   : codec_(std::bind(&RpcChannel::onRpcMessage, this, _1, _2, _3)),
+    id_(0),
     services_(NULL)
 {
   LOG_INFO << "RpcChannel::ctor - " << this;
@@ -55,7 +56,7 @@ void RpcChannel::CallMethod(const ::google::protobuf::MethodDescriptor* method,
 {
   RpcMessage message;
   message.set_type(REQUEST);
-  int64_t id = id_.incrementAndGet();
+  int64_t id = (id_ += 1);
   message.set_id(id);
   message.set_service(method->service()->full_name());
   message.set_method(method->name());

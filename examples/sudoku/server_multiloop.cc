@@ -1,6 +1,5 @@
 #include "examples/sudoku/sudoku.h"
 
-#include "muduo/base/Atomic.h"
 #include "muduo/base/Logging.h"
 #include "muduo/base/Thread.h"
 #include "muduo/net/EventLoop.h"

@@ -1,4 +1,3 @@
-#include "muduo/base/Atomic.h"
 #include "muduo/base/Condition.h"
 #include "muduo/base/CurrentThread.h"
 #include "muduo/base/Mutex.h"
@@ -6,6 +5,7 @@
 #include "muduo/base/Timestamp.h"
 #include "muduo/net/EventLoop.h"
 
+#include <atomic>
 #include <math.h>
 #include <stdio.h>
 
@@ -14,7 +14,7 @@ using namespace muduo::net;
 
 int g_cycles = 0;
 int g_percent = 82;
-AtomicInt32 g_done;
+std::atomic<int32_t> g_done{0};
 bool g_busy = false;
 MutexLock g_mutex;
 Condition g_cond(g_mutex);
@@ -46,7 +46,7 @@ void findCycles()
 
 void threadFunc()
 {
-  while (g_done.get() == 0)
+  while (g_done.load() == 0)
   {
     {
     MutexLockGuard guard(g_mutex);
@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
     break;
   }
 
-  g_done.getAndSet(1);
+  g_done.exchange(1);
   {
   MutexLockGuard guard(g_mutex);
   g_busy = true;

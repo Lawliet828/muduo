@@ -1,12 +1,12 @@
 #include "examples/ace/logging/logrecord.pb.h"
 
-#include "muduo/base/Atomic.h"
 #include "muduo/base/FileUtil.h"
 #include "muduo/base/Logging.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/TcpServer.h"
 #include "muduo/net/protobuf/ProtobufCodecLite.h"
 
+#include <atomic>
 #include <stdio.h>
 
 using namespace muduo;
@@ -45,7 +45,7 @@ class Session : noncopyable
     filename += timebuf;
 
     char buf[32];
-    snprintf(buf, sizeof buf, "%d", globalCount_.incrementAndGet());
+    snprintf(buf, sizeof buf, "%d", globalCount_ += 1);
     filename += buf;
 
     filename += ".log";
@@ -71,11 +71,11 @@ class Session : noncopyable
 
   Codec codec_;
   FileUtil::AppendFile file_;
-  static AtomicInt32 globalCount_;
+  static std::atomic<int32_t> globalCount_;
 };
 typedef std::shared_ptr<Session> SessionPtr;
 
-AtomicInt32 Session::globalCount_;
+std::atomic<int32_t> Session::globalCount_{0};
 
 class LogServer : noncopyable
 {

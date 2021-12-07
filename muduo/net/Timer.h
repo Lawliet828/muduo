@@ -11,9 +11,11 @@
 #ifndef MUDUO_NET_TIMER_H
 #define MUDUO_NET_TIMER_H
 
-#include "muduo/base/Atomic.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/base/Timestamp.h"
 #include "muduo/net/Callbacks.h"
+
+#include <atomic>
 
 namespace muduo
 {
@@ -31,7 +33,7 @@ class Timer : noncopyable
       expiration_(when),
       interval_(interval),
       repeat_(interval > 0.0),
-      sequence_(s_numCreated_.incrementAndGet())
+      sequence_(s_numCreated_ += 1)
   { }
 
   void run() const
@@ -45,7 +47,7 @@ class Timer : noncopyable
 
   void restart(Timestamp now);
 
-  static int64_t numCreated() { return s_numCreated_.get(); }
+  static int64_t numCreated() { return s_numCreated_.load(); }
 
  private:
   const TimerCallback callback_; // 定时器回调函数
@@ -54,7 +56,7 @@ class Timer : noncopyable
   const bool repeat_; // 是否有重复
   const int64_t sequence_; // 定时器序列号
 
-  static AtomicInt64 s_numCreated_; // 定时器计数
+  static std::atomic<int64_t> s_numCreated_; // 定时器计数
 };
 
 }  // namespace net

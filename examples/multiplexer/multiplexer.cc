@@ -1,4 +1,3 @@
-#include "muduo/base/Atomic.h"
 #include "muduo/base/Logging.h"
 #include "muduo/base/Mutex.h"
 #include "muduo/base/Thread.h"
@@ -7,6 +6,7 @@
 #include "muduo/net/TcpClient.h"
 #include "muduo/net/TcpServer.h"
 
+#include <atomic>
 #include <queue>
 #include <utility>
 
@@ -34,6 +34,8 @@ class MultiplexServer
     : server_(loop, listenAddr, "MultiplexServer"),
       backend_(loop, backendAddr, "MultiplexBackend"),
       numThreads_(numThreads),
+      transferred_(0),
+      receivedMessages_(0),
       oldCounter_(0),
       startTime_(Timestamp::now())
   {
@@ -197,8 +199,8 @@ class MultiplexServer
   void onClientMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp)
   {
     size_t len = buf->readableBytes();
-    transferred_.addAndGet(len);
-    receivedMessages_.incrementAndGet();
+    transferred_ += len;
+    receivedMessages_++;
     if (!conn->getContext().empty())
     {
       int id = boost::any_cast<int>(conn->getContext());
@@ -257,17 +259,17 @@ class MultiplexServer
   void onBackendMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp)
   {
     size_t len = buf->readableBytes();
-    transferred_.addAndGet(len);
-    receivedMessages_.incrementAndGet();
+    transferred_ += len;
+    receivedMessages_++;
     sendToClient(buf);
   }
 
   void printStatistics()
   {
     Timestamp endTime = Timestamp::now();
-    int64_t newCounter = transferred_.get();
+    int64_t newCounter = transferred_.load();
     int64_t bytes = newCounter - oldCounter_;
-    int64_t msgs = receivedMessages_.getAndSet(0);
+    int64_t msgs = receivedMessages_.exchange(0);
     double time = timeDifference(endTime, startTime_);
     printf("%4.3f MiB/s %4.3f Ki Msgs/s %6.2f bytes per msg\n",
         static_cast<double>(bytes)/time/1024/1024,
@@ -281,8 +283,8 @@ class MultiplexServer
   TcpServer server_;
   TcpClient backend_;
   int numThreads_;
-  AtomicInt64 transferred_;
-  AtomicInt64 receivedMessages_;
+  std::atomic<int64_t> transferred_;
+  std::atomic<int64_t> receivedMessages_;
   int64_t oldCounter_;
   Timestamp startTime_;
   MutexLock mutex_;

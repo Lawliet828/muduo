@@ -86,7 +86,8 @@ class Client : noncopyable
     : loop_(loop),
       threadPool_(loop, "pingpong-client"),
       sessionCount_(sessionCount),
-      timeout_(timeout)
+      timeout_(timeout),
+      numConnected_(0)
   {
     loop->runAfter(timeout, std::bind(&Client::handleTimeout, this));
     if (threadCount > 1)
@@ -117,7 +118,7 @@ class Client : noncopyable
 
   void onConnect()
   {
-    if (numConnected_.incrementAndGet() == sessionCount_)
+    if ((numConnected_ += 1) == sessionCount_)
     {
       LOG_WARN << "all connected";
     }
@@ -125,7 +126,7 @@ class Client : noncopyable
 
   void onDisconnect(const TcpConnectionPtr& conn)
   {
-    if (numConnected_.decrementAndGet() == 0)
+    if ((numConnected_ -= 1) == 0)
     {
       LOG_WARN << "all disconnected";
 
@@ -168,7 +169,7 @@ class Client : noncopyable
   int timeout_;
   std::vector<std::unique_ptr<Session>> sessions_;
   string message_;
-  AtomicInt32 numConnected_;
+  std::atomic<int32_t> numConnected_;
 };
 
 void Session::onConnection(const TcpConnectionPtr& conn)

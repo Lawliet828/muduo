@@ -11,12 +11,12 @@
 #ifndef MUDUO_NET_PROTORPC_RPCCHANNEL_H
 #define MUDUO_NET_PROTORPC_RPCCHANNEL_H
 
-#include "muduo/base/Atomic.h"
 #include "muduo/base/Mutex.h"
 #include "muduo/net/protorpc/RpcCodec.h"
 
 #include <google/protobuf/service.h>
 
+#include <atomic>
 #include <map>
 
 // Service and RpcChannel classes are incorporated from
@@ -137,7 +137,7 @@ class RpcChannel : public ::google::protobuf::RpcChannel
 
   RpcCodec codec_;
   TcpConnectionPtr conn_;
-  AtomicInt64 id_;
+  std::atomic<int64_t> id_;
 
   MutexLock mutex_;
   std::map<int64_t, OutstandingCall> outstandings_ GUARDED_BY(mutex_);
