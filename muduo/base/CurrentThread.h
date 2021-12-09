@@ -6,6 +6,7 @@
 #ifndef MUDUO_BASE_CURRENTTHREAD_H
 #define MUDUO_BASE_CURRENTTHREAD_H
 
+#include "muduo/base/Likely.h"
 #include "muduo/base/Types.h"
 
 namespace muduo
@@ -21,7 +22,7 @@ namespace CurrentThread
 
   inline int tid()
   {
-    if (__builtin_expect(t_cachedTid == 0, 0))
+    if (UNLIKELY(t_cachedTid == 0))
     {
       cacheTid();
     }
