@@ -47,7 +47,7 @@ class ThreadPool : noncopyable
   void run(Task f);
 
  private:
-  bool isFull() const REQUIRES(mutex_);
+  bool isFull() const;
   void runInThread();
   Task take();
 
