@@ -76,8 +76,8 @@ class BlockingQueue : noncopyable
 
  private:
   mutable MutexLock mutex_;
-  Condition         notEmpty_ GUARDED_BY(mutex_);
-  queue_type        queue_ GUARDED_BY(mutex_);
+  Condition         notEmpty_;
+  queue_type        queue_;
 };  // __attribute__ ((aligned (64)));
 
 }  // namespace muduo

@@ -157,7 +157,7 @@ class EventLoop : noncopyable
   Channel* currentActiveChannel_; // 正在处理消息的Channel
 
   mutable MutexLock mutex_;
-  std::vector<Functor> pendingFunctors_ GUARDED_BY(mutex_); // 自己设置的额外的处理函数集合
+  std::vector<Functor> pendingFunctors_; // @GuardedBy mutex_
 };
 
 }  // namespace net

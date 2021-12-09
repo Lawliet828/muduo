@@ -100,7 +100,7 @@ class ChatServer : noncopyable
   typedef ThreadLocalSingleton<ConnectionList> LocalConnections;
 
   MutexLock mutex_;
-  std::set<EventLoop*> loops_ GUARDED_BY(mutex_);
+  std::set<EventLoop*> loops_;
 };
 
 int main(int argc, char* argv[])
