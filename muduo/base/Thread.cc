@@ -6,7 +6,7 @@
 #include "muduo/base/Thread.h"
 #include "muduo/base/CurrentThread.h"
 #include "muduo/base/Exception.h"
-#include "muduo/base/Logging.h"
+#include "muduo/base/Timestamp.h"
 
 #include <type_traits>
 
@@ -105,12 +105,11 @@ struct ThreadData
   }
 };
 
-void* startThread(void* obj)
+void startThread(void* obj)
 {
   ThreadData* data = static_cast<ThreadData*>(obj);
   data->runInThread();
   delete data;
-  return NULL;
 }
 
 }  // namespace detail
@@ -142,7 +141,6 @@ std::atomic<int32_t> Thread::numCreated_{0};
 Thread::Thread(ThreadFunc func, const string& n)
   : started_(false),
     joined_(false),
-    pthreadId_(0),
     tid_(0),
     func_(std::move(func)),
     name_(n),
@@ -155,7 +153,7 @@ Thread::~Thread()
 {
   if (started_ && !joined_)
   {
-    pthread_detach(pthreadId_);
+    thread_.detach();
   }
 }
 
@@ -174,27 +172,19 @@ void Thread::start()
 {
   assert(!started_);
   started_ = true;
-  // FIXME: move(func_)
   detail::ThreadData* data = new detail::ThreadData(func_, name_, &tid_, &latch_);
-  if (pthread_create(&pthreadId_, NULL, &detail::startThread, data))
-  {
-    started_ = false;
-    delete data; // or no delete?
-    LOG_SYSFATAL << "Failed in pthread_create";
-  }
-  else
-  {
-    latch_.wait();
-    assert(tid_ > 0);
-  }
+  thread_ = std::thread(detail::startThread, data);
+
+  latch_.wait();
+  assert(tid_ > 0);
 }
 
-int Thread::join()
+void Thread::join()
 {
   assert(started_);
   assert(!joined_);
   joined_ = true;
-  return pthread_join(pthreadId_, NULL);
+  thread_.join();
 }
 
 }  // namespace muduo
