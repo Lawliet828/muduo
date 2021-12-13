@@ -9,6 +9,7 @@
 #include "muduo/base/noncopyable.h"
 
 #include <assert.h>
+#include <mutex> // for once_flag call_once
 #include <pthread.h>
 #include <stdlib.h> // atexit
 
@@ -37,7 +38,7 @@ class Singleton : noncopyable
 
   static T& instance()
   {
-    pthread_once(&ponce_, &Singleton::init);
+    std::call_once(once_, &Singleton::init);
     assert(value_ != NULL);
     return *value_;
   }
@@ -62,12 +63,12 @@ class Singleton : noncopyable
   }
 
  private:
-  static pthread_once_t ponce_;
+  static std::once_flag once_;
   static T*             value_;
 };
 
 template<typename T>
-pthread_once_t Singleton<T>::ponce_ = PTHREAD_ONCE_INIT;
+std::once_flag Singleton<T>::once_;
 
 template<typename T>
 T* Singleton<T>::value_ = NULL;
