@@ -28,12 +28,10 @@ class FixedBuffer : noncopyable
   FixedBuffer()
     : cur_(data_)
   {
-    setCookie(cookieStart);
   }
 
   ~FixedBuffer()
   {
-    setCookie(cookieEnd);
   }
 
   void append(const char* /*restrict*/ buf, size_t len)
@@ -59,18 +57,13 @@ class FixedBuffer : noncopyable
 
   // for used by GDB
   const char* debugString();
-  void setCookie(void (*cookie)()) { cookie_ = cookie; }
   // for used by unit test
   string toString() const { return string(data_, length()); }
   StringPiece toStringPiece() const { return StringPiece(data_, length()); }
 
  private:
   const char* end() const { return data_ + sizeof data_; }
-  // Must be outline function for cookies.
-  static void cookieStart();
-  static void cookieEnd();
 
-  void (*cookie_)();
   char data_[SIZE];
   char* cur_;
 };
