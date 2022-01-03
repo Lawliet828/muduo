@@ -39,16 +39,16 @@ class LogFile : noncopyable
   static string getLogFileName(const string& basename, time_t* now);
 
   const string basename_;
-  const off_t rollSize_;
-  const int flushInterval_;
+  const off_t rollSize_; // 日志文件达到rollSize_就换一个新文件
+  const int flushInterval_; // 日志写入的间隔时间
   const int checkEveryN_;
 
   int count_;
 
   std::unique_ptr<MutexLock> mutex_;
-  time_t startOfPeriod_;
-  time_t lastRoll_;
-  time_t lastFlush_;
+  time_t startOfPeriod_; // 开始记录日志的时间(调整至零点的时间)
+  time_t lastRoll_; // 上一次滚动日志文件的时间
+  time_t lastFlush_; // 上一次日志写入文件的时间
   std::unique_ptr<FileUtil::AppendFile> file_;
 
   const static int kRollPerSeconds_ = 60*60*24;

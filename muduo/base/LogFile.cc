@@ -77,7 +77,7 @@ void LogFile::append_unlocked(const char* logline, int len)
       count_ = 0;
       time_t now = ::time(NULL);
       time_t thisPeriod_ = now / kRollPerSeconds_ * kRollPerSeconds_;
-      if (thisPeriod_ != startOfPeriod_)
+      if (thisPeriod_ != startOfPeriod_) // 不等意味着第二天的零点
       {
         rollFile();
       }
@@ -94,6 +94,7 @@ bool LogFile::rollFile()
 {
   time_t now = 0;
   string filename = getLogFileName(basename_, &now);
+  // 时间对齐至kRollPerSeconds_整数倍, 也就是时间调整到当天零点
   time_t start = now / kRollPerSeconds_ * kRollPerSeconds_;
 
   if (now > lastRoll_)
