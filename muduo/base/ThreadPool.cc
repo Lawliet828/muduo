@@ -13,10 +13,7 @@
 using namespace muduo;
 
 ThreadPool::ThreadPool(const string& nameArg)
-  : mutex_(),
-    notEmpty_(mutex_),
-    notFull_(mutex_),
-    name_(nameArg),
+  : name_(nameArg),
     maxQueueSize_(0),
     running_(false)
 {
@@ -52,10 +49,10 @@ void ThreadPool::start(int numThreads)
 void ThreadPool::stop()
 {
   {
-  MutexLockGuard lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   running_ = false;
-  notEmpty_.notifyAll();
-  notFull_.notifyAll();
+  notEmpty_.notify_all();
+  notFull_.notify_all();
   }
   for (auto& thr : threads_)
   {
@@ -65,7 +62,7 @@ void ThreadPool::stop()
 
 size_t ThreadPool::queueSize() const
 {
-  MutexLockGuard lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   return queue_.size();
 }
 
@@ -77,26 +74,26 @@ void ThreadPool::run(Task task)
   }
   else
   {
-    MutexLockGuard lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     while (isFull() && running_)
     {
-      notFull_.wait();
+      notFull_.wait(lock);
     }
     if (!running_) return;
     assert(!isFull());
 
     queue_.push_back(std::move(task));
-    notEmpty_.notify();
+    notEmpty_.notify_one();
   }
 }
 
 ThreadPool::Task ThreadPool::take()
 {
-  MutexLockGuard lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   // always use a while-loop, due to spurious wakeup
   while (queue_.empty() && running_)
   {
-    notEmpty_.wait();
+    notEmpty_.wait(lock);
   }
   Task task;
   if (!queue_.empty())
@@ -105,7 +102,7 @@ ThreadPool::Task ThreadPool::take()
     queue_.pop_front();
     if (maxQueueSize_ > 0)
     {
-      notFull_.notify();
+      notFull_.notify_one();
     }
   }
   return task;
@@ -113,7 +110,7 @@ ThreadPool::Task ThreadPool::take()
 
 bool ThreadPool::isFull() const
 {
-  mutex_.assertLocked();
+  // mutex_.assertLocked();
   return maxQueueSize_ > 0 && queue_.size() >= maxQueueSize_;
 }
 

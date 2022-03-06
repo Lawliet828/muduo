@@ -6,12 +6,12 @@
 #ifndef MUDUO_BASE_THREADPOOL_H
 #define MUDUO_BASE_THREADPOOL_H
 
-#include "muduo/base/Condition.h"
-#include "muduo/base/Mutex.h"
 #include "muduo/base/Thread.h"
 #include "muduo/base/Types.h"
 
+#include <condition_variable>
 #include <deque>
+#include <mutex>
 #include <vector>
 
 namespace muduo
@@ -51,9 +51,9 @@ class ThreadPool : noncopyable
   void runInThread();
   Task take();
 
-  mutable MutexLock mutex_;
-  Condition notEmpty_;
-  Condition notFull_;
+  mutable std::mutex mutex_;
+  std::condition_variable notEmpty_;
+  std::condition_variable notFull_;
   string name_;
   Task threadInitCallback_;
   std::vector<std::unique_ptr<muduo::Thread>> threads_;
