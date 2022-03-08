@@ -26,6 +26,8 @@ using namespace muduo::net;
 
 namespace
 {
+// 当前线程EventLoop对象指针
+// 线程局部存储
 __thread EventLoop* t_loopInThisThread = 0;
 
 const int kPollTimeMs = 10000;
@@ -100,10 +102,12 @@ EventLoop::~EventLoop()
   t_loopInThisThread = NULL;
 }
 
+// 事件循环, 该函数不能跨线程调用
+// 只能在创建该对象的线程中调用
 void EventLoop::loop()
 {
   assert(!looping_);
-  // 事件循环必须在io线程执行 如果不在代表发生错误，直接退出程序。
+  // 事件循环必须在IO线程执行 如果不在代表发生错误，直接退出程序。
   assertInLoopThread();
   looping_ = true;
   quit_ = false;  // FIXME: what if someone calls quit() before loop() ?

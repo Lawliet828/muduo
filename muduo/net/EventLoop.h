@@ -142,7 +142,7 @@ class EventLoop : noncopyable
   bool eventHandling_; /* atomic */ // 正在处理IO事件标志位
   bool callingPendingFunctors_; /* atomic */ // 正在处理其他事件标志位
   int64_t iteration_;
-  const pid_t threadId_; // 创建EventLoop的线程Id
+  const pid_t threadId_; // 当前对象所属线程ID
   Timestamp pollReturnTime_; // 多路复用返回时间戳
   std::unique_ptr<Poller> poller_; // 封装IO多路复用的类
   std::unique_ptr<TimerQueue> timerQueue_; // 定时器队列
