@@ -123,6 +123,11 @@ inline Logger::LogLevel Logger::logLevel()
 //   else
 //     logWarnStream << "Bad news";
 //
+/**
+ * 1. 构造一个无名的Logger对象
+ * 2. 调用stream函数返回一个LogStream对象
+ * 3. 调用operator<<来输出日志
+ */
 #define LOG_TRACE if (muduo::Logger::logLevel() <= muduo::Logger::TRACE) \
   muduo::Logger(__FILE__, __LINE__, muduo::Logger::TRACE, __func__).stream()
 #define LOG_DEBUG if (muduo::Logger::logLevel() <= muduo::Logger::DEBUG) \
