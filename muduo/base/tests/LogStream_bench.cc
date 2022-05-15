@@ -10,6 +10,7 @@ using namespace muduo;
 
 const size_t N = 1000000;
 
+// 暂时忽略类型转换告警
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
 template<typename T>
