@@ -29,7 +29,7 @@ PollPoller::~PollPoller() = default;
 Timestamp PollPoller::poll(int timeoutMs, ChannelList* activeChannels)
 {
   // XXX pollfds_ shouldn't change
-  int numEvents = ::poll(&*pollfds_.begin(), pollfds_.size(), timeoutMs);
+  int numEvents = ::poll(pollfds_.data(), pollfds_.size(), timeoutMs);
   int savedErrno = errno;
   Timestamp now(Timestamp::now());
   if (numEvents > 0)
@@ -101,10 +101,13 @@ void PollPoller::updateChannel(Channel* channel)
     pfd.fd = channel->fd();
     pfd.events = static_cast<short>(channel->events());
     pfd.revents = 0;
+    // 将一个通道暂时更改为不关注事件，但不从Poller中移除该通道
     if (channel->isNoneEvent())
     {
+      // 暂时忽略该文件描述符的事件
+      // 这里pfd.fd 可以直接设置为-1
       // ignore this pollfd
-      pfd.fd = -channel->fd()-1;
+      pfd.fd = -channel->fd()-1; // 这样子设置是为了removeChannel优化
     }
   }
 }
@@ -128,6 +131,7 @@ void PollPoller::removeChannel(Channel* channel)
   }
   else
   {
+    // 这里移除的算法复杂度是O(1)，将待删除元素与最后一个元素交换再pop_back
     int channelAtEnd = pollfds_.back().fd;
     iter_swap(pollfds_.begin()+idx, pollfds_.end()-1);
     if (channelAtEnd < 0)

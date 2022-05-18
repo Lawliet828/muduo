@@ -137,8 +137,8 @@ class EventLoop : noncopyable
 
   typedef std::vector<Channel*> ChannelList;
 
-  bool looping_; /* atomic */ // 循环开启的标志位
-  std::atomic<bool> quit_; // 退出循环标志位
+  bool looping_; /* atomic */ // 是否处于循环的状态
+  std::atomic<bool> quit_; // 是否退出循环
   bool eventHandling_; /* atomic */ // 当前是否处于事件处理的状态
   bool callingPendingFunctors_; /* atomic */ // 正在处理其他事件标志位
   int64_t iteration_;

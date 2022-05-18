@@ -58,11 +58,12 @@ class Poller : noncopyable
   }
 
  protected:
+  // 文件描述符 => Channel*
   typedef std::map<int, Channel*> ChannelMap;
   ChannelMap channels_;
 
  private:
-  EventLoop* ownerLoop_;
+  EventLoop* ownerLoop_; // Poller所属的EventLoop
 };
 
 }  // namespace net

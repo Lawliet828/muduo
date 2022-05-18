@@ -1,9 +1,10 @@
 #include "muduo/net/EventLoop.h"
-#include "muduo/base/Thread.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
+
+#include <thread>
 
 using namespace muduo;
 using namespace muduo::net;
@@ -35,8 +36,7 @@ int main()
   EventLoop loop;
   assert(EventLoop::getEventLoopOfCurrentThread() == &loop);
 
-  Thread thread(threadFunc);
-  thread.start();
+  std::thread thread(threadFunc);
 
   loop.loop();
 }
