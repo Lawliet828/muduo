@@ -56,6 +56,7 @@ void Channel::update()
   loop_->updateChannel(this);
 }
 
+// 调用这个函数之前确保调用disableAll
 void Channel::remove()
 {
   assert(isNoneEvent());
