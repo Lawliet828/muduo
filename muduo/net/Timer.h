@@ -51,12 +51,12 @@ class Timer : noncopyable
 
  private:
   const TimerCallback callback_; // 定时器回调函数
-  Timestamp expiration_; // 绝对的时间
-  const double interval_; // 如果有重复属性, 超时的时间间隔
-  const bool repeat_; // 是否有重复
+  Timestamp expiration_; // 下一次的超时时刻
+  const double interval_; // 超时时间间隔, 如果是一次性定时器，该值为0
+  const bool repeat_; // 是否重复
   const int64_t sequence_; // 定时器序列号
 
-  static std::atomic<int64_t> s_numCreated_; // 定时器计数
+  static std::atomic<int64_t> s_numCreated_; // 定时器计数, 当前已经创建的定时器数量
 };
 
 }  // namespace net

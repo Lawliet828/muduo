@@ -18,6 +18,7 @@
 #include "muduo/base/Timestamp.h"
 #include "muduo/net/Callbacks.h"
 #include "muduo/net/Channel.h"
+#include "muduo/net/TimerId.h"
 
 namespace muduo
 {
@@ -26,7 +27,6 @@ namespace net
 
 class EventLoop;
 class Timer;
-class TimerId;
 
 ///
 /// A best efforts timer queue.
@@ -43,7 +43,6 @@ class TimerQueue : noncopyable
   /// repeats if @c interval > 0.0.
   ///
   /// Must be thread safe. Usually be called from other threads.
-  // 往定时器队列中添加定时器
   TimerId addTimer(TimerCallback cb,
                    Timestamp when,
                    double interval);
@@ -61,11 +60,14 @@ class TimerQueue : noncopyable
   typedef std::pair<Timer*, int64_t> ActiveTimer; // 定时器和其定时器的序列号
   typedef std::set<ActiveTimer> ActiveTimerSet;
 
+  // 以下两个成员函数只可能在其所属的I/O线程中调用，因而不必加锁。
+  // 服务器性能杀手之一是锁竞争，所以要尽可能少用锁
   void addTimerInLoop(Timer* timer);
   void cancelInLoop(TimerId timerId);
   // called when timerfd alarms
   void handleRead();
   // move out all expired timers
+  // 返回超时的定时器列表
   std::vector<Entry> getExpired(Timestamp now);
   void reset(const std::vector<Entry>& expired, Timestamp now);
 
@@ -75,14 +77,14 @@ class TimerQueue : noncopyable
   const int timerfd_; // 只有一个定时器,防止同时开启多个定时器,占用多余的文件描述符
   Channel timerfdChannel_; // 定时器关心的channel对象
   // Timer list sorted by expiration
-  TimerList timers_; // 定时器集合(有序)
+  TimerList timers_; // 定时器列表, 按到期时间排序
 
   // for cancel()
   // activeTimers_和timers_保存的是相同的数据
   // timers_是按照到期的时间排序的, activeTimers_是按照对象地址排序
-  ActiveTimerSet activeTimers_; // 保存正在活动的定时器(无序)
+  ActiveTimerSet activeTimers_;
   bool callingExpiredTimers_; /* atomic */ // 是否正在处理超时事件
-  ActiveTimerSet cancelingTimers_; // 保存的是取消的定时器(无序)
+  ActiveTimerSet cancelingTimers_; // 保存的是取消的定时器
 };
 
 }  // namespace net

@@ -15,7 +15,6 @@
 #include "muduo/base/Logging.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/Timer.h"
-#include "muduo/net/TimerId.h"
 
 #include <sys/timerfd.h>
 #include <unistd.h>
@@ -38,6 +37,7 @@ int createTimerfd()
   return timerfd;
 }
 
+// 计算超时时刻与当前时间的时间差
 struct timespec howMuchTimeFromNow(Timestamp when)
 {
   int64_t microseconds = when.microSecondsSinceEpoch()
@@ -54,6 +54,7 @@ struct timespec howMuchTimeFromNow(Timestamp when)
   return ts;
 }
 
+// 清除定时器，避免一直触发
 void readTimerfd(int timerfd, Timestamp now)
 {
   uint64_t howmany;
@@ -65,6 +66,7 @@ void readTimerfd(int timerfd, Timestamp now)
   }
 }
 
+// 重置定时器的超时时间
 void resetTimerfd(int timerfd, Timestamp expiration)
 {
   // wake up loop by timerfd_settime()
@@ -132,10 +134,12 @@ void TimerQueue::cancel(TimerId timerId)
 void TimerQueue::addTimerInLoop(Timer* timer)
 {
   loop_->assertInLoopThread();
+  // 插入一个定时器，有可能该定时器到期时间比原先最早到期的定时器还要早
   bool earliestChanged = insert(timer);
 
   if (earliestChanged)
   {
+    // 重置定时器的超时时刻(timerfd_settime)
     resetTimerfd(timerfd_, timer->expiration());
   }
 }
@@ -155,6 +159,7 @@ void TimerQueue::cancelInLoop(TimerId timerId)
   }
   else if (callingExpiredTimers_)
   {
+    // 已经到期，并且正在调用回调函数的定时器
     cancelingTimers_.insert(timer);
   }
   assert(timers_.size() == activeTimers_.size());
@@ -164,7 +169,7 @@ void TimerQueue::handleRead()
 {
   loop_->assertInLoopThread();
   Timestamp now(Timestamp::now());
-  readTimerfd(timerfd_, now);
+  readTimerfd(timerfd_, now); // 清除该事件，避免一直触发
 
   std::vector<Entry> expired = getExpired(now);
 
@@ -173,6 +178,7 @@ void TimerQueue::handleRead()
   // safe to callback outside critical section
   for (const Entry& it : expired)
   {
+    // 这里回调定时器处理函数
     it.second->run();
   }
   callingExpiredTimers_ = false;
@@ -185,11 +191,17 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
   assert(timers_.size() == activeTimers_.size());
   std::vector<Entry> expired;
   Entry sentry(now, reinterpret_cast<Timer*>(UINTPTR_MAX));
+  // 返回第一个未到期的Timer的迭代器
+  // lower_bound的含义是返回第一个值>=sentry的元素的iterator
+  // 即*end >= sentry，从而end->first > now
   TimerList::iterator end = timers_.lower_bound(sentry);
   assert(end == timers_.end() || now < end->first);
+  // 将到期的定时器插入到expired中
   std::copy(timers_.begin(), end, back_inserter(expired));
+  // 从timers_中移除到期的定时器
   timers_.erase(timers_.begin(), end);
 
+  // 从activeTimers_中移除到期的定时器
   for (const Entry& it : expired)
   {
     ActiveTimer timer(it.second, it.second->sequence());
@@ -208,6 +220,7 @@ void TimerQueue::reset(const std::vector<Entry>& expired, Timestamp now)
   for (const Entry& it : expired)
   {
     ActiveTimer timer(it.second, it.second->sequence());
+    // 如果是重复的定时器并且是未取消定时器，则重启该定时器
     if (it.second->repeat()
         && cancelingTimers_.find(timer) == cancelingTimers_.end())
     {
@@ -216,6 +229,7 @@ void TimerQueue::reset(const std::vector<Entry>& expired, Timestamp now)
     }
     else
     {
+      // 一次性定时器或者已被取消的定时器是不能重置的，因此删除该定时器
       // FIXME move to a free list
       delete it.second; // FIXME: no delete please
     }
