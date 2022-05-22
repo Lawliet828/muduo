@@ -13,12 +13,13 @@
 
 #include <atomic>
 #include <functional>
+#include <mutex>
 #include <vector>
 
 #include <boost/any.hpp>
 
-#include "muduo/base/Mutex.h"
 #include "muduo/base/CurrentThread.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/base/Timestamp.h"
 #include "muduo/net/Callbacks.h"
 #include "muduo/net/TimerId.h"
@@ -156,7 +157,7 @@ class EventLoop : noncopyable
   ChannelList activeChannels_; // poller返回的活动通道
   Channel* currentActiveChannel_; // 当前正在处理的活动通道
 
-  mutable MutexLock mutex_;
+  mutable std::mutex mutex_;
   std::vector<Functor> pendingFunctors_; // @GuardedBy mutex_
 };
 

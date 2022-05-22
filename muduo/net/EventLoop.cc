@@ -9,7 +9,6 @@
 #include "muduo/net/EventLoop.h"
 
 #include "muduo/base/Logging.h"
-#include "muduo/base/Mutex.h"
 #include "muduo/net/Channel.h"
 #include "muduo/net/Poller.h"
 #include "muduo/net/SocketsOps.h"
@@ -172,7 +171,7 @@ void EventLoop::runInLoop(Functor cb)
 void EventLoop::queueInLoop(Functor cb)
 {
   {
-  MutexLockGuard lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   pendingFunctors_.push_back(std::move(cb));
   }
 
@@ -184,7 +183,7 @@ void EventLoop::queueInLoop(Functor cb)
 
 size_t EventLoop::queueSize() const
 {
-  MutexLockGuard lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   return pendingFunctors_.size();
 }
 
@@ -269,7 +268,7 @@ void EventLoop::doPendingFunctors()
   callingPendingFunctors_ = true;
 
   {
-  MutexLockGuard lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   functors.swap(pendingFunctors_);
   }
 

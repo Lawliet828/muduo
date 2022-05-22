@@ -110,7 +110,6 @@ ThreadPool::Task ThreadPool::take()
 
 bool ThreadPool::isFull() const
 {
-  // mutex_.assertLocked();
   return maxQueueSize_ > 0 && queue_.size() >= maxQueueSize_;
 }
 
