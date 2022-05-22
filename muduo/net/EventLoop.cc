@@ -152,18 +152,17 @@ void EventLoop::quit()
   }
 }
 
-/**
- * 外部通过runInloop给当前loop分配任务，在当前线程则直接执行，
- * 其他线程分到任务队列，然后唤醒fd，之后再处理。
- */
+// 在I/O线程中执行某个回调函数，该函数可以跨线程调用
 void EventLoop::runInLoop(Functor cb)
 {
   if (isInLoopThread())
   {
+    // 如果是当前IO线程调用runInLoop，则同步调用cb
     cb();
   }
   else
   {
+    // 如果是其它线程调用runInLoop，则异步地将cb添加到队列
     queueInLoop(std::move(cb));
   }
 }
@@ -175,6 +174,9 @@ void EventLoop::queueInLoop(Functor cb)
   pendingFunctors_.push_back(std::move(cb));
   }
 
+  // 调用queueInLoop的线程不是IO线程需要唤醒
+  // 或者调用queueInLoop的线程是IO线程，并且此时正在调用pending functor，需要唤醒
+  // 只有IO线程的事件回调中调用queueInLoop才不需要唤醒
   if (!isInLoopThread() || callingPendingFunctors_)
   {
     wakeup();
@@ -262,6 +264,18 @@ void EventLoop::handleRead()
   }
 }
 
+/**
+ * 不是简单地在临界区内依次调用Functor，
+ * 而是把回调列表swap到functors中，
+ * 这样一方面减小了临界区的长度（意味着不会阻塞其它线程的queueInLoop()），
+ * 另一方面，也避免了死锁（因为Functor可能再次调用queueInLoop()）
+ * 
+ * 由于doPendingFunctors()调用的Functor可能再次调用queueInLoop(cb)，
+ * 这时，queueInLoop()就必须wakeup()，否则新增的cb可能就不能及时调用了
+ * 
+ * muduo没有反复执行doPendingFunctors()直到pendingFunctors为空，
+ * 这是有意的，否则IO线程可能陷入死循环，无法处理IO事件。
+ */
 void EventLoop::doPendingFunctors()
 {
   std::vector<Functor> functors;
