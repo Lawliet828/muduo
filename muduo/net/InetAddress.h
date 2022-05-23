@@ -34,6 +34,7 @@ class InetAddress : public muduo::copyable
  public:
   /// Constructs an endpoint with given port number.
   /// Mostly used in TcpServer listening.
+  // 仅仅指定port，不指定ip，则ip为INADDR_ANY（即0.0.0.0）
   explicit InetAddress(uint16_t port = 0, bool loopbackOnly = false, bool ipv6 = false);
 
   /// Constructs an endpoint with given ip and port.

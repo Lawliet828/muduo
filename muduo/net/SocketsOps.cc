@@ -292,6 +292,12 @@ struct sockaddr_in6 sockets::getPeerAddr(int sockfd)
   return peeraddr;
 }
 
+// 自连接是指(sourceIP, sourcePort) = (destIP, destPort)
+// 自连接发生的原因:
+// 客户端在发起connect的时候，没有bind(2)
+// 客户端与服务器端在同一台机器，即sourceIP = destIP，
+// 服务器尚未开启，即服务器还没有在destPort端口上处于监听
+// 就有可能出现自连接，这样，服务器也无法启动了
 bool sockets::isSelfConnect(int sockfd)
 {
   struct sockaddr_in6 localaddr = getLocalAddr(sockfd);
