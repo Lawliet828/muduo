@@ -30,17 +30,17 @@ class EventLoopThread : noncopyable
   EventLoopThread(const ThreadInitCallback& cb = ThreadInitCallback(),
                   const string& name = string());
   ~EventLoopThread();
-  EventLoop* startLoop();
+  EventLoop* startLoop(); // 启动线程，该线程就成为了IO线程
 
  private:
-  void threadFunc();
+  void threadFunc(); // 线程函数
 
   EventLoop* loop_;
   bool exiting_;
   Thread thread_;
   MutexLock mutex_;
   Condition cond_;
-  ThreadInitCallback callback_;
+  ThreadInitCallback callback_; // 回调函数在EventLoop::loop事件循环之前被调用
 };
 
 }  // namespace net
