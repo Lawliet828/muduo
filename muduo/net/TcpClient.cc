@@ -140,12 +140,11 @@ void TcpClient::newConnection(int sockfd)
 
   InetAddress localAddr(sockets::getLocalAddr(sockfd));
   // FIXME poll with zero timeout to double confirm the new connection
-  // FIXME use make_shared if necessary
-  TcpConnectionPtr conn(new TcpConnection(loop_,
-                                          connName,
-                                          sockfd,
-                                          localAddr,
-                                          peerAddr));
+  TcpConnectionPtr conn = std::make_shared<TcpConnection>(loop_,
+                                                          connName,
+                                                          sockfd,
+                                                          localAddr,
+                                                          peerAddr);
 
   conn->setConnectionCallback(connectionCallback_);
   conn->setMessageCallback(messageCallback_);
