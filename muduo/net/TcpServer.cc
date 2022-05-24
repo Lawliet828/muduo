@@ -33,6 +33,8 @@ TcpServer::TcpServer(EventLoop* loop,
     started_(0),
     nextConnId_(1)
 {
+  // Acceptor::handleRead函数中会回调用TcpServer::newConnection
+  // _1对应的是socket文件描述符，_2对应的是对等方的地址(InetAddress)
   acceptor_->setNewConnectionCallback(
       std::bind(&TcpServer::newConnection, this, _1, _2));
 }
@@ -57,6 +59,7 @@ void TcpServer::setThreadNum(int numThreads)
   threadPool_->setThreadNum(numThreads);
 }
 
+// 该函数可以跨线程调用
 void TcpServer::start()
 {
   if (started_.exchange(1) == 0)

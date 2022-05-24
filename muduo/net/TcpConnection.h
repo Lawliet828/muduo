@@ -132,7 +132,7 @@ class TcpConnection : noncopyable,
   void stopReadInLoop();
 
   EventLoop* loop_;
-  const string name_;
+  const string name_; // 连接名
   StateE state_;  // FIXME: use atomic variable
   bool reading_;
   // we don't expose those classes to client.

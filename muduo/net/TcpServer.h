@@ -76,11 +76,13 @@ class TcpServer : noncopyable
 
   /// Set connection callback.
   /// Not thread safe.
+  // 设置连接到来或者连接关闭回调函数
   void setConnectionCallback(const ConnectionCallback& cb)
   { connectionCallback_ = cb; }
 
   /// Set message callback.
   /// Not thread safe.
+  // 设置消息到来回调函数
   void setMessageCallback(const MessageCallback& cb)
   { messageCallback_ = cb; }
 
@@ -97,11 +99,12 @@ class TcpServer : noncopyable
   /// Not thread safe, but in loop
   void removeConnectionInLoop(const TcpConnectionPtr& conn);
 
+  // 连接的名称 => TcpConnectionPtr
   typedef std::map<string, TcpConnectionPtr> ConnectionMap;
 
   EventLoop* loop_;  // the acceptor loop
-  const string ipPort_;
-  const string name_;
+  const string ipPort_; // 服务端口
+  const string name_; // 服务名
   std::unique_ptr<Acceptor> acceptor_; // avoid revealing Acceptor
   std::shared_ptr<EventLoopThreadPool> threadPool_;
   ConnectionCallback connectionCallback_;
@@ -110,8 +113,8 @@ class TcpServer : noncopyable
   ThreadInitCallback threadInitCallback_;
   std::atomic<int32_t> started_;
   // always in loop thread
-  int nextConnId_;
-  ConnectionMap connections_;
+  int nextConnId_; // 下一个连接ID
+  ConnectionMap connections_; // 连接列表
 };
 
 }  // namespace net

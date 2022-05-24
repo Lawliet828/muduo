@@ -50,6 +50,7 @@ TcpConnection::TcpConnection(EventLoop* loop,
     peerAddr_(peerAddr),
     highWaterMark_(64*1024*1024)
 {
+  // 通道可读事件到来的时候，回调TcpConnection::handleRead，_1是事件发生时间
   channel_->setReadCallback(
       std::bind(&TcpConnection::handleRead, this, _1));
   channel_->setWriteCallback(
@@ -326,7 +327,7 @@ void TcpConnection::connectEstablished()
   assert(state_ == kConnecting);
   setState(kConnected);
   channel_->tie(shared_from_this());
-  channel_->enableReading();
+  channel_->enableReading(); // TcpConnection所对应的通道加入到Poller关注
 
   connectionCallback_(shared_from_this());
 }
