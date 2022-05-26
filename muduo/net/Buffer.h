@@ -191,6 +191,7 @@ class Buffer : public muduo::copyable
     append(static_cast<const char*>(data), len);
   }
 
+  // 确保缓冲区可写空间>=len，如果不足则扩充
   void ensureWritableBytes(size_t len)
   {
     if (writableBytes() < len)
