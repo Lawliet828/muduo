@@ -149,12 +149,14 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
     return;
   }
   // if no thing in output queue, try writing directly
+  // 通道没有关注可写事件并且发送缓冲区没有数据，直接write
   if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
   {
     nwrote = sockets::write(channel_->fd(), data, len);
     if (nwrote >= 0)
     {
       remaining = len - nwrote;
+      // 写完了，回调writeCompleteCallback_
       if (remaining == 0 && writeCompleteCallback_)
       {
         loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
@@ -175,6 +177,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
   }
 
   assert(remaining <= len);
+  // 没有错误，并且还有未写完的数据（说明内核发送缓冲区满，要将未写完的数据添加到output buffer中）
   if (!faultError && remaining > 0)
   {
     size_t oldLen = outputBuffer_.readableBytes();
@@ -187,7 +190,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
     outputBuffer_.append(static_cast<const char*>(data)+nwrote, remaining);
     if (!channel_->isWriting())
     {
-      channel_->enableWriting();
+      channel_->enableWriting(); // 关注POLLOUT事件
     }
   }
 }
@@ -206,6 +209,7 @@ void TcpConnection::shutdown()
 void TcpConnection::shutdownInLoop()
 {
   loop_->assertInLoopThread();
+  // channel不再关注POLLOUT事件
   if (!channel_->isWriting())
   {
     // we are not writing
@@ -366,6 +370,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
   }
 }
 
+// 内核发送缓冲区有空间了，回调该函数
 void TcpConnection::handleWrite()
 {
   loop_->assertInLoopThread();
@@ -379,11 +384,13 @@ void TcpConnection::handleWrite()
       outputBuffer_.retrieve(n);
       if (outputBuffer_.readableBytes() == 0)
       {
-        channel_->disableWriting();
+        channel_->disableWriting(); // 停止关注POLLOUT事件，以免出现busy loop
         if (writeCompleteCallback_)
         {
           loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
         }
+        // 在shutdown函数中, 如果还有写, 则只将state_置为kDisconnecting
+        // 所以写完之后, 要判断state_是否为kDisconnecting, 如果是, 则关闭连接
         if (state_ == kDisconnecting)
         {
           shutdownInLoop();

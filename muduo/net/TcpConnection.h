@@ -142,13 +142,29 @@ class TcpConnection : noncopyable,
   const InetAddress peerAddr_;
   ConnectionCallback connectionCallback_;
   MessageCallback messageCallback_;
+  // 数据发送完毕回调函数，即所有的用户数据都已拷贝到内核缓冲区时回调该函数
+  /**
+   * 对于大流量程序, 需要关注writeCompleteCallback_
+   * 程序不断生成数据, 然后发送conn->send()
+   * 如果对等方接收不及时, 受到通告窗口的控制, 内核发送缓冲区不足,
+   * 这个时候, 就会将用户数据添加到应用层发送缓冲区, 可能会撑爆output buffer
+   * 解决方法就是, 调整发送频率, 关注writeCompleteCallback_
+   * 
+   * outputBuffer_被清空也会回调该函数，可以理解为低水位标回调函数
+   */
   WriteCompleteCallback writeCompleteCallback_;
+  /**
+   * 高水位标回调函数
+   * 
+   * outputBuffer_撑到一定程度时, 就会调用该函数
+   * 意味着对等方接收不及时
+   */
   HighWaterMarkCallback highWaterMarkCallback_;
   CloseCallback closeCallback_;
   size_t highWaterMark_;
   Buffer inputBuffer_;
   Buffer outputBuffer_; // FIXME: use list<Buffer> as output buffer.
-  boost::any context_;
+  boost::any context_; // 连接对象可以绑定一个未知类型的上下文对象
   // FIXME: creationTime_, lastReceiveTime_
   //        bytesReceived_, bytesSent_
 };
