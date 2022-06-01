@@ -83,9 +83,9 @@ void Connector::connect()
   switch (savedErrno)
   {
     case 0:
-    case EINPROGRESS:
+    case EINPROGRESS: // 非阻塞套接字，未连接成功返回码是EINPROGRESS表示正在连接
     case EINTR:
-    case EISCONN:
+    case EISCONN: // 连接成功
       connecting(sockfd);
       break;
 
@@ -105,7 +105,7 @@ void Connector::connect()
     case EFAULT:
     case ENOTSOCK:
       LOG_SYSERR << "connect error in Connector::startInLoop " << savedErrno;
-      sockets::close(sockfd);
+      sockets::close(sockfd); // 不能重连，关闭sockfd
       break;
 
     default:

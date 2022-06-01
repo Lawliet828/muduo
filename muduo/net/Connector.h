@@ -60,12 +60,12 @@ class Connector : noncopyable,
   void resetChannel();
 
   EventLoop* loop_;
-  InetAddress serverAddr_;
+  InetAddress serverAddr_; // 服务器端地址
   bool connect_; // atomic
   States state_;  // FIXME: use atomic variable
-  std::unique_ptr<Channel> channel_;
+  std::unique_ptr<Channel> channel_; // Connector所对应的Channel
   NewConnectionCallback newConnectionCallback_;
-  int retryDelayMs_;
+  int retryDelayMs_; // 重连延迟时间
 };
 
 }  // namespace net
