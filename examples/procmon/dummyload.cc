@@ -1,6 +1,5 @@
-#include "muduo/base/Condition.h"
 #include "muduo/base/CurrentThread.h"
-#include "muduo/base/Mutex.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/base/Thread.h"
 #include "muduo/base/Timestamp.h"
 #include "muduo/net/EventLoop.h"
@@ -10,6 +9,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <condition_variable>
+#include <mutex>
+
 using namespace muduo;
 using namespace muduo::net;
 
@@ -17,8 +19,8 @@ int g_cycles = 0;
 int g_percent = 82;
 std::atomic<int32_t> g_done{0};
 bool g_busy = false;
-MutexLock g_mutex;
-Condition g_cond(g_mutex);
+std::mutex g_mutex;
+std::condition_variable g_cond;
 
 double busy(int cycles)
 {
@@ -50,9 +52,8 @@ void threadFunc()
   while (g_done.load() == 0)
   {
     {
-    MutexLockGuard guard(g_mutex);
-    while (!g_busy)
-      g_cond.wait();
+    std::unique_lock<std::mutex> guard(g_mutex);
+    g_cond.wait(guard, [&]{ return g_busy; });
     }
     busy(g_cycles);
   }
@@ -85,9 +86,9 @@ void load(int percent)
     }
 
     {
-    MutexLockGuard guard(g_mutex);
+    std::unique_lock<std::mutex> guard(g_mutex);
     g_busy = busy;
-    g_cond.notifyAll();
+    g_cond.notify_all();
     }
 
     CurrentThread::sleepUsec(10*1000); // 10 ms
@@ -171,9 +172,9 @@ int main(int argc, char* argv[])
 
   g_done.exchange(1);
   {
-  MutexLockGuard guard(g_mutex);
+  std::unique_lock<std::mutex> guard(g_mutex);
   g_busy = true;
-  g_cond.notifyAll();
+  g_cond.notify_all();
   }
   for (int i = 0; i < numThreads; ++i)
   {
