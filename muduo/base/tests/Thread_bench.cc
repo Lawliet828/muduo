@@ -1,11 +1,11 @@
 #include "muduo/base/BlockingQueue.h"
 #include "muduo/base/CurrentThread.h"
-#include "muduo/base/Mutex.h"
 #include "muduo/base/Thread.h"
 #include "muduo/base/Timestamp.h"
 
 #include <atomic>
 #include <map>
+#include <mutex>
 #include <vector>
 
 #include <stdio.h>
@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 bool g_verbose = false;
-muduo::MutexLock g_mutex;
+std::mutex g_mutex;
 std::atomic<int32_t> g_count{0};
 std::map<int, int> g_delays;
 
@@ -27,7 +27,7 @@ void threadFunc2(muduo::Timestamp start)
 {
   muduo::Timestamp now(muduo::Timestamp::now());
   int delay = static_cast<int>(timeDifference(now, start) * 1000000);
-  muduo::MutexLockGuard lock(g_mutex);
+  std::lock_guard<std::mutex> lock(g_mutex);
   ++g_delays[delay];
 }
 
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 
   if (g_verbose)
   {
-    muduo::MutexLockGuard lock(g_mutex);
+    std::lock_guard<std::mutex> lock(g_mutex);
     for (const auto& delay : g_delays)
     {
       printf("delay = %d, count = %d\n",
