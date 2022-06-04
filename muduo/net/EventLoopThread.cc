@@ -18,8 +18,6 @@ EventLoopThread::EventLoopThread(const ThreadInitCallback& cb,
   : loop_(NULL),
     exiting_(false),
     thread_(std::bind(&EventLoopThread::threadFunc, this), name),
-    mutex_(),
-    cond_(mutex_),
     callback_(cb)
 {
 }
@@ -43,11 +41,8 @@ EventLoop* EventLoopThread::startLoop()
 
   EventLoop* loop = NULL;
   {
-    MutexLockGuard lock(mutex_);
-    while (loop_ == NULL)
-    {
-      cond_.wait();
-    }
+    std::unique_lock<std::mutex> lock(mutex_);
+    cond_.wait(lock, [&]() { return loop_ != NULL; });
     loop = loop_;
   }
 
@@ -64,17 +59,17 @@ void EventLoopThread::threadFunc()
   }
 
   {
-    MutexLockGuard lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     // loop_指针指向了一个栈上的对象，threadFunc函数退出之后，这个指针就失效了
     // threadFunc函数退出，就意味着线程退出了，EventLoopThread对象也就没有存在的价值了。
     // 因而不会有什么大的问题
     loop_ = &loop;
-    cond_.notify();
+    cond_.notify_one();
   }
 
   loop.loop();
   //assert(exiting_);
-  MutexLockGuard lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   loop_ = NULL;
 }
 
