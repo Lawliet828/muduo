@@ -6,11 +6,13 @@
 #ifndef MUDUO_BASE_BOUNDEDBLOCKINGQUEUE_H
 #define MUDUO_BASE_BOUNDEDBLOCKINGQUEUE_H
 
-#include "muduo/base/Condition.h"
-#include "muduo/base/Mutex.h"
-
-#include <deque>
 #include <assert.h>
+
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+
+#include "muduo/base/noncopyable.h"
 
 namespace muduo
 {
@@ -20,81 +22,69 @@ class BoundedBlockingQueue : noncopyable
 {
  public:
   explicit BoundedBlockingQueue(unsigned maxSize)
-    : maxSize_(maxSize),
-      mutex_(),
-      notEmpty_(mutex_),
-      notFull_(mutex_)
+    : maxSize_(maxSize)
   {
   }
 
   void put(const T& x)
   {
-    MutexLockGuard lock(mutex_);
-    while (queue_.size() == maxSize_)
-    {
-      notFull_.wait();
-    }
+    std::unique_lock<std::mutex> lock(mutex_);
+    notFull_.wait(lock, [&]() { return queue_.size() < maxSize_; });
     assert(queue_.size() < maxSize_);
     queue_.push_back(x);
-    notEmpty_.notify();
+    notEmpty_.notify_one();
   }
 
   void put(T&& x)
   {
-    MutexLockGuard lock(mutex_);
-    while (queue_.size() == maxSize_)
-    {
-      notFull_.wait();
-    }
+    std::unique_lock<std::mutex> lock(mutex_);
+    notFull_.wait(lock, [&]() { return queue_.size() < maxSize_; });
     assert(queue_.size() < maxSize_);
     queue_.push_back(std::move(x));
-    notEmpty_.notify();
+    notEmpty_.notify_one();
   }
 
   T take()
   {
-    MutexLockGuard lock(mutex_);
-    while (queue_.empty())
-    {
-      notEmpty_.wait();
-    }
+    std::unique_lock<std::mutex> lock(mutex_);
+    notEmpty_.wait(lock, [&]() { return !queue_.empty(); });
     assert(!queue_.empty());
     T front(std::move(queue_.front()));
     queue_.pop_front();
-    notFull_.notify();
+    notFull_.notify_one();
     return front;
   }
 
   bool empty() const
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     return queue_.empty();
   }
 
   bool full() const
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     return queue_.size() == maxSize_;
   }
 
   size_t size() const
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     return queue_.size();
   }
 
   size_t capacity() const
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     return queue_.capacity();
   }
 
  private:
-  const unsigned             maxSize_;
-  mutable MutexLock          mutex_;
-  Condition                  notEmpty_;
-  Condition                  notFull_;
-  std::deque<T>              queue_;
+  const unsigned maxSize_;
+  mutable std::mutex mutex_;
+  std::condition_variable notEmpty_;
+  std::condition_variable notFull_;
+  std::deque<T> queue_;
 };
 
 }  // namespace muduo
