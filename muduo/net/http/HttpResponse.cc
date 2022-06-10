@@ -25,15 +25,17 @@ void HttpResponse::appendToBuffer(Buffer* output) const
 
   if (closeConnection_)
   {
+    // 如果是短连接，不需要告诉浏览器Content-Length，浏览器也能正确处理
     output->append("Connection: close\r\n");
   }
   else
   {
-    snprintf(buf, sizeof buf, "Content-Length: %zd\r\n", body_.size());
+    snprintf(buf, sizeof buf, "Content-Length: %zd\r\n", body_.size()); // 实体长度
     output->append(buf);
     output->append("Connection: Keep-Alive\r\n");
   }
 
+  // header列表
   for (const auto& header : headers_)
   {
     output->append(header.first);
@@ -42,6 +44,6 @@ void HttpResponse::appendToBuffer(Buffer* output) const
     output->append("\r\n");
   }
 
-  output->append("\r\n");
+  output->append("\r\n"); // header与body之间的空行
   output->append(body_);
 }
