@@ -8,6 +8,8 @@
 
 #include "muduo/net/EventLoopThread.h"
 
+#include <assert.h>
+
 #include "muduo/net/EventLoop.h"
 
 using namespace muduo;

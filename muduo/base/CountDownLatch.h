@@ -8,27 +8,38 @@
 #ifndef MUDUO_BASE_COUNTDOWNLATCH_H
 #define MUDUO_BASE_COUNTDOWNLATCH_H
 
-#include "muduo/base/Condition.h"
-#include "muduo/base/Mutex.h"
+#include <condition_variable>
+#include <mutex>
 
-namespace muduo
-{
+#include "muduo/base/noncopyable.h"
 
-class CountDownLatch : noncopyable
-{
+namespace muduo {
+
+class CountDownLatch : noncopyable {
  public:
+  explicit CountDownLatch(int count) : count_(count) {}
 
-  explicit CountDownLatch(int count);
+  void wait() {
+    std::unique_lock<std::mutex> lock(mutex_);
+    condition_.wait(lock, [&]() { return count_ == 0; });
+  }
 
-  void wait();
+  void countDown() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    --count_;
+    if (count_ == 0) {
+      condition_.notify_all();
+    }
+  }
 
-  void countDown();
-
-  int getCount() const;
+  int getCount() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return count_;
+  }
 
  private:
-  mutable MutexLock mutex_;
-  Condition condition_;
+  mutable std::mutex mutex_;
+  std::condition_variable condition_;
   int count_;
 };
 

@@ -1,5 +1,6 @@
 #include "muduo/base/BoundedBlockingQueue.h"
 #include "muduo/base/CountDownLatch.h"
+#include "muduo/base/CurrentThread.h"
 #include "muduo/base/Thread.h"
 
 #include <string>

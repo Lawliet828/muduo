@@ -2,6 +2,7 @@
 #include "muduo/net/EventLoop.h"
 #include "muduo/base/Thread.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 

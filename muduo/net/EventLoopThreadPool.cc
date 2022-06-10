@@ -11,6 +11,7 @@
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/EventLoopThread.h"
 
+#include <assert.h>
 #include <stdio.h>
 
 using namespace muduo;

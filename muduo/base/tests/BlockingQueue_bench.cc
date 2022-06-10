@@ -1,5 +1,6 @@
 #include "muduo/base/BlockingQueue.h"
 #include "muduo/base/CountDownLatch.h"
+#include "muduo/base/CurrentThread.h"
 #include "muduo/base/Logging.h"
 #include "muduo/base/Thread.h"
 #include "muduo/base/Timestamp.h"

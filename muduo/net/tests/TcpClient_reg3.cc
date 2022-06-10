@@ -1,5 +1,6 @@
 // TcpClient destructs in a different thread.
 
+#include "muduo/base/CurrentThread.h"
 #include "muduo/base/Logging.h"
 #include "muduo/net/EventLoopThread.h"
 #include "muduo/net/TcpClient.h"

@@ -1,5 +1,7 @@
+#include "muduo/base/Condition.h"
 #include "muduo/base/CountDownLatch.h"
 #include "muduo/base/Logging.h"
+#include "muduo/base/Mutex.h"
 #include "muduo/net/EventLoopThread.h"
 #include "muduo/net/TcpClient.h"
 

@@ -1,5 +1,6 @@
 #include "examples/asio/chat/codec.h"
 
+#include "muduo/base/CurrentThread.h"
 #include "muduo/base/Logging.h"
 #include "muduo/net/EventLoopThread.h"
 #include "muduo/net/TcpClient.h"

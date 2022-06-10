@@ -5,6 +5,7 @@
 #include "muduo/net/EventLoop.h"
 
 #include <atomic>
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <unistd.h>
