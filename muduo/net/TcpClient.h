@@ -11,7 +11,9 @@
 #ifndef MUDUO_NET_TCPCLIENT_H
 #define MUDUO_NET_TCPCLIENT_H
 
-#include "muduo/base/Mutex.h"
+#include <mutex>
+
+#include "muduo/base/noncopyable.h"
 #include "muduo/net/TcpConnection.h"
 
 namespace muduo
@@ -38,7 +40,7 @@ class TcpClient : noncopyable
 
   TcpConnectionPtr connection() const
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     return connection_;
   }
 
@@ -80,7 +82,7 @@ class TcpClient : noncopyable
   bool connect_; // atomic
   // always in loop thread
   int nextConnId_;
-  mutable MutexLock mutex_;
+  mutable std::mutex mutex_;
   TcpConnectionPtr connection_; // @GuardedBy mutex_
 };
 

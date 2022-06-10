@@ -77,7 +77,7 @@ TcpClient::~TcpClient()
   TcpConnectionPtr conn;
   bool unique = false;
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     unique = connection_.unique();
     conn = connection_;
   }
@@ -115,7 +115,7 @@ void TcpClient::disconnect()
   connect_ = false;
 
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (connection_)
     {
       connection_->shutdown();
@@ -152,7 +152,7 @@ void TcpClient::newConnection(int sockfd)
   conn->setCloseCallback(
       std::bind(&TcpClient::removeConnection, this, _1)); // FIXME: unsafe
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     connection_ = conn;
   }
   conn->connectEstablished();
@@ -164,7 +164,7 @@ void TcpClient::removeConnection(const TcpConnectionPtr& conn)
   assert(loop_ == conn->getLoop());
 
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     assert(connection_ == conn);
     connection_.reset();
   }

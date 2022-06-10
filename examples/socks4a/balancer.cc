@@ -3,12 +3,14 @@
 #include "muduo/base/ThreadLocal.h"
 #include <stdio.h>
 
+#include <mutex>
+
 using namespace muduo;
 using namespace muduo::net;
 
 std::vector<InetAddress> g_backends;
 ThreadLocal<std::map<string, TunnelPtr> > t_tunnels;
-MutexLock g_mutex;
+std::mutex g_mutex;
 size_t g_current = 0;
 
 void onServerConnection(const TcpConnectionPtr& conn)
@@ -21,7 +23,7 @@ void onServerConnection(const TcpConnectionPtr& conn)
     conn->stopRead();
     size_t current = 0;
     {
-    MutexLockGuard guard(g_mutex);
+    std::lock_guard<std::mutex> guard(g_mutex);
     current = g_current;
     g_current = (g_current+1) % g_backends.size();
     }

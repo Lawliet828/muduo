@@ -1,8 +1,9 @@
-#include "muduo/base/Mutex.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/EventLoopThread.h"
 
 #include <stdio.h>
+
+#include <mutex>
 
 //
 // Minimize locking
@@ -33,7 +34,7 @@ class Printer : muduo::noncopyable
     int count = 0;
 
     {
-      muduo::MutexLockGuard lock(mutex_);
+      std::lock_guard<std::mutex> lock(mutex_);
       if (count_ < 10)
       {
         count = count_;
@@ -66,7 +67,7 @@ class Printer : muduo::noncopyable
     int count = 0;
 
     {
-      muduo::MutexLockGuard lock(mutex_);
+      std::lock_guard<std::mutex> lock(mutex_);
       if (count_ < 10)
       {
         count = count_;
@@ -95,7 +96,7 @@ class Printer : muduo::noncopyable
 
 private:
 
-  muduo::MutexLock mutex_;
+  std::mutex mutex_;
   muduo::net::EventLoop* loop1_;
   muduo::net::EventLoop* loop2_;
   int count_;

@@ -40,13 +40,13 @@ void ThriftServer::onConnection(const TcpConnectionPtr& conn)
   if (conn->connected())
   {
     ThriftConnectionPtr ptr(new ThriftConnection(this, conn));
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     assert(conns_.find(conn->name()) == conns_.end());
     conns_[conn->name()] = ptr;
   }
   else
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     assert(conns_.find(conn->name()) != conns_.end());
     conns_.erase(conn->name());
   }

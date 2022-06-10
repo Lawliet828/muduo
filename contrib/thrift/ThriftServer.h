@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <map>
+#include <mutex>
 
 #include <boost/noncopyable.hpp>
 
@@ -215,7 +216,7 @@ class ThriftServer : boost::noncopyable,
   muduo::net::TcpServer server_;
   int numWorkerThreads_;
   muduo::ThreadPool workerThreadPool_;
-  muduo::MutexLock mutex_;
+  std::mutex mutex_;
   std::map<muduo::string, ThriftConnectionPtr> conns_;
 };
 

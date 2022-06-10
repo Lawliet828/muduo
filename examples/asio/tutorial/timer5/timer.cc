@@ -1,8 +1,8 @@
-#include "muduo/base/Mutex.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/EventLoopThread.h"
 
 #include <iostream>
+#include <mutex>
 
 class Printer : muduo::noncopyable
 {
@@ -23,7 +23,7 @@ class Printer : muduo::noncopyable
 
   void print1()
   {
-    muduo::MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (count_ < 10)
     {
       std::cout << "Timer 1: " << count_ << "\n";
@@ -39,7 +39,7 @@ class Printer : muduo::noncopyable
 
   void print2()
   {
-    muduo::MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (count_ < 10)
     {
       std::cout << "Timer 2: " << count_ << "\n";
@@ -55,7 +55,7 @@ class Printer : muduo::noncopyable
 
 private:
 
-  muduo::MutexLock mutex_;
+  std::mutex mutex_;
   muduo::net::EventLoop* loop1_;
   muduo::net::EventLoop* loop2_;
   int count_;

@@ -11,11 +11,12 @@
 #ifndef MUDUO_NET_INSPECT_INSPECTOR_H
 #define MUDUO_NET_INSPECT_INSPECTOR_H
 
-#include "muduo/base/Mutex.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/net/http/HttpRequest.h"
 #include "muduo/net/http/HttpServer.h"
 
 #include <map>
+#include <mutex>
 
 namespace muduo
 {
@@ -56,7 +57,7 @@ class Inspector : noncopyable
   std::unique_ptr<ProcessInspector> processInspector_;
   std::unique_ptr<PerformanceInspector> performanceInspector_;
   std::unique_ptr<SystemInspector> systemInspector_;
-  MutexLock mutex_;
+  std::mutex mutex_;
   std::map<string, CommandList> modules_;
   std::map<string, HelpList> helps_;
 };

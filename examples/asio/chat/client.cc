@@ -1,11 +1,11 @@
 #include "examples/asio/chat/codec.h"
 
 #include "muduo/base/Logging.h"
-#include "muduo/base/Mutex.h"
 #include "muduo/net/EventLoopThread.h"
 #include "muduo/net/TcpClient.h"
 
 #include <iostream>
+#include <mutex>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -38,7 +38,7 @@ class ChatClient : noncopyable
 
   void write(const StringPiece& message)
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (connection_)
     {
       codec_.send(get_pointer(connection_), message);
@@ -52,7 +52,7 @@ class ChatClient : noncopyable
              << conn->peerAddress().toIpPort() << " is "
              << (conn->connected() ? "UP" : "DOWN");
 
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (conn->connected())
     {
       connection_ = conn;
@@ -72,7 +72,7 @@ class ChatClient : noncopyable
 
   TcpClient client_;
   LengthHeaderCodec codec_;
-  MutexLock mutex_;
+  std::mutex mutex_;
   TcpConnectionPtr connection_;
 };
 

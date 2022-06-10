@@ -84,14 +84,14 @@ void Inspector::add(const string& module,
                     const Callback& cb,
                     const string& help)
 {
-  MutexLockGuard lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   modules_[module][command] = cb;
   helps_[module][command] = help;
 }
 
 void Inspector::remove(const string& module, const string& command)
 {
-  MutexLockGuard lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   std::map<string, CommandList>::iterator it = modules_.find(module);
   if (it != modules_.end())
   {
@@ -110,7 +110,7 @@ void Inspector::onRequest(const HttpRequest& req, HttpResponse* resp)
   if (req.path() == "/")
   {
     string result;
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     for (std::map<string, HelpList>::const_iterator helpListI = helps_.begin();
          helpListI != helps_.end();
          ++helpListI)
@@ -164,7 +164,7 @@ void Inspector::onRequest(const HttpRequest& req, HttpResponse* resp)
     else
     {
       string module = result[0];
-      MutexLockGuard lock(mutex_);
+      std::lock_guard<std::mutex> lock(mutex_);
       std::map<string, CommandList>::const_iterator commListI = modules_.find(module);
       if (commListI != modules_.end())
       {

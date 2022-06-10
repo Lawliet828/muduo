@@ -1,6 +1,5 @@
 #include "examples/ace/logging/logrecord.pb.h"
 
-#include "muduo/base/Mutex.h"
 #include "muduo/base/Logging.h"
 #include "muduo/base/ProcessInfo.h"
 #include "muduo/net/EventLoop.h"
@@ -9,6 +8,7 @@
 #include "muduo/net/protobuf/ProtobufCodecLite.h"
 
 #include <iostream>
+#include <mutex>
 #include <stdio.h>
 
 using namespace muduo;
@@ -48,7 +48,7 @@ class LogClient : noncopyable
 
   void write(const StringPiece& message)
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     updateLogRecord(message);
     if (connection_)
     {
@@ -67,7 +67,7 @@ class LogClient : noncopyable
              << conn->peerAddress().toIpPort() << " is "
              << (conn->connected() ? "UP" : "DOWN");
 
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (conn->connected())
     {
       connection_ = conn;
@@ -99,7 +99,6 @@ class LogClient : noncopyable
 
   void updateLogRecord(const StringPiece& message)
   {
-    mutex_.assertLocked();
     logRecord_.set_level(1);
     logRecord_.set_thread_id(CurrentThread::tid());
     logRecord_.set_timestamp(Timestamp::now().microSecondsSinceEpoch());
@@ -108,7 +107,7 @@ class LogClient : noncopyable
 
   TcpClient client_;
   Codec codec_;
-  MutexLock mutex_;
+  std::mutex mutex_;
   LogRecord logRecord_;
   TcpConnectionPtr connection_;
 };
