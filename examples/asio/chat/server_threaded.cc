@@ -1,10 +1,11 @@
 #include "examples/asio/chat/codec.h"
 
 #include "muduo/base/Logging.h"
-#include "muduo/base/Mutex.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/TcpServer.h"
 
+#include <mutex>
 #include <set>
 #include <stdio.h>
 #include <unistd.h>
@@ -43,7 +44,7 @@ class ChatServer : noncopyable
         << conn->localAddress().toIpPort() << " is "
         << (conn->connected() ? "UP" : "DOWN");
 
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (conn->connected())
     {
       connections_.insert(conn);
@@ -58,7 +59,7 @@ class ChatServer : noncopyable
                        const string& message,
                        Timestamp)
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     for (ConnectionList::iterator it = connections_.begin();
         it != connections_.end();
         ++it)
@@ -70,7 +71,7 @@ class ChatServer : noncopyable
   typedef std::set<TcpConnectionPtr> ConnectionList;
   TcpServer server_;
   LengthHeaderCodec codec_;
-  MutexLock mutex_;
+  std::mutex mutex_;
   ConnectionList connections_;
 };
 

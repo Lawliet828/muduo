@@ -1,6 +1,5 @@
 set(base_SRCS
   AsyncLogging.cc
-  Condition.cc
   CurrentThread.cc
   Date.cc
   Exception.cc

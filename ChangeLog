@@ -19,7 +19,6 @@
   * Add Travis CI
   * Add EvevtLoop::queueSize() by <zhuangshi23>
   * Implement TcpClient::retry() by fdxuwei
-  * Change Condition::waitForSeconds() parameter type from int to double by ChaoShu
   * Minor fixes by JackDrogon, YuCong, zieckey, wuzhaogai
   * Version 1.0.9
 

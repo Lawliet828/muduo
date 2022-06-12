@@ -1,7 +1,6 @@
-#include "muduo/base/Condition.h"
 #include "muduo/base/CountDownLatch.h"
 #include "muduo/base/Logging.h"
-#include "muduo/base/Mutex.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/net/EventLoopThread.h"
 #include "muduo/net/TcpClient.h"
 
@@ -9,8 +8,10 @@
 
 #include "examples/wordcount/hash.h"
 
+#include <condition_variable>
 #include <fstream>
 #include <iostream>
+#include <mutex>
 
 #include <stdio.h>
 #define __STDC_FORMAT_MACROS
@@ -29,7 +30,6 @@ class SendThrottler : muduo::noncopyable
     : client_(loop, addr, "Sender"),
       connectLatch_(1),
       disconnectLatch_(1),
-      cond_(mutex_),
       congestion_(false)
   {
     LOG_INFO << "SendThrottler [" << addr.toIpPort() << "]";
@@ -91,29 +91,25 @@ class SendThrottler : muduo::noncopyable
 
   void onHighWaterMark()
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     congestion_ = true;
   }
 
   void onWriteComplete()
   {
-    MutexLockGuard lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     bool oldCong = congestion_;
     congestion_ = false;
     if (oldCong)
     {
-      cond_.notify();
+      cond_.notify_one();
     }
   }
 
   void throttle()
   {
-    MutexLockGuard lock(mutex_);
-    while (congestion_)
-    {
-      LOG_DEBUG << "wait ";
-      cond_.wait();
-    }
+    std::unique_lock<std::mutex> lock(mutex_);
+    cond_.wait(lock, [&]{ return !congestion_; });
   }
 
   TcpClient client_;
@@ -122,8 +118,8 @@ class SendThrottler : muduo::noncopyable
   CountDownLatch disconnectLatch_;
   Buffer buffer_;
 
-  MutexLock mutex_;
-  Condition cond_;
+  std::mutex mutex_;
+  std::condition_variable cond_;
   bool congestion_;
 };
 

@@ -1,5 +1,4 @@
 #include "muduo/base/Logging.h"
-#include "muduo/base/Mutex.h"
 #include "muduo/base/Thread.h"
 #include "muduo/base/ThreadPool.h"
 
@@ -7,6 +6,8 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+
+#include <mutex>
 
 using namespace muduo;
 

@@ -25,7 +25,7 @@ class SudokuStat : muduo::noncopyable
     result << "task_queue_size " << queueSize << '\n';
 
     {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     result << "total_requests " << totalRequests_ << '\n';
     result << "total_responses " << totalResponses_ << '\n';
     result << "total_solved " << totalSolved_ << '\n';
@@ -68,7 +68,7 @@ class SudokuStat : muduo::noncopyable
   string reset()
   {
     {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     lastSecond_ = 0;
     requests_.clear();
     latencies_.clear();
@@ -86,7 +86,7 @@ class SudokuStat : muduo::noncopyable
   {
     const time_t second = now.secondsSinceEpoch();
     const int64_t elapsed_us = now.microSecondsSinceEpoch() - receive.microSecondsSinceEpoch();
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     assert(requests_.size() == latencies_.size());
     ++totalResponses_;
     if (solved)
@@ -161,25 +161,25 @@ class SudokuStat : muduo::noncopyable
 
   void recordRequest()
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     ++totalRequests_;
   }
 
   void recordBadRequest()
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     ++badRequests_;
   }
 
   void recordDroppedRequest()
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     ++droppedRequests_;
   }
 
  private:
   const ThreadPool& pool_;  // only for ThreadPool::queueSize()
-  mutable MutexLock mutex_;
+  mutable std::mutex mutex_;
   // invariant:
   // 0. requests_.size() == latencies_.size()
   // 1. if lastSecond_ > 0, requests_.back() is for that second

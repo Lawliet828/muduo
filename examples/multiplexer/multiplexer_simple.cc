@@ -244,7 +244,7 @@ class MultiplexServer : noncopyable
 
   TcpServer server_;
   TcpClient backend_;
-  // MutexLock mutex_;
+  // std::mutex mutex_;
   TcpConnectionPtr backendConn_;
   std::map<int, TcpConnectionPtr> clientConns_;
   std::queue<int> availIds_;

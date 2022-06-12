@@ -3,7 +3,7 @@
 #include "examples/protobuf/codec/query.pb.h"
 
 #include "muduo/base/Logging.h"
-#include "muduo/base/Mutex.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/TcpClient.h"
 

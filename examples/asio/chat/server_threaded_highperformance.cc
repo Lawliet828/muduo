@@ -1,14 +1,15 @@
-#include "examples/asio/chat/codec.h"
+#include <stdio.h>
+#include <unistd.h>
 
+#include <mutex>
+#include <set>
+
+#include "examples/asio/chat/codec.h"
 #include "muduo/base/Logging.h"
-#include "muduo/base/Mutex.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/base/ThreadLocalSingleton.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/TcpServer.h"
-
-#include <set>
-#include <stdio.h>
-#include <unistd.h>
 
 using namespace muduo;
 using namespace muduo::net;
@@ -62,7 +63,7 @@ class ChatServer : noncopyable
     EventLoop::Functor f = std::bind(&ChatServer::distributeMessage, this, message);
     LOG_DEBUG;
 
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     for (std::set<EventLoop*>::iterator it = loops_.begin();
         it != loops_.end();
         ++it)
@@ -91,7 +92,7 @@ class ChatServer : noncopyable
     assert(LocalConnections::pointer() == NULL);
     LocalConnections::instance();
     assert(LocalConnections::pointer() != NULL);
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     loops_.insert(loop);
   }
 
@@ -99,7 +100,7 @@ class ChatServer : noncopyable
   LengthHeaderCodec codec_;
   typedef ThreadLocalSingleton<ConnectionList> LocalConnections;
 
-  MutexLock mutex_;
+  std::mutex mutex_;
   std::set<EventLoop*> loops_;
 };
 

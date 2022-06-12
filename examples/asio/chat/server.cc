@@ -1,7 +1,7 @@
 #include "examples/asio/chat/codec.h"
 
 #include "muduo/base/Logging.h"
-#include "muduo/base/Mutex.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/TcpServer.h"
 

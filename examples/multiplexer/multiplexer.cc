@@ -1,5 +1,5 @@
 #include "muduo/base/Logging.h"
-#include "muduo/base/Mutex.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/base/Thread.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/InetAddress.h"
@@ -7,6 +7,7 @@
 #include "muduo/net/TcpServer.h"
 
 #include <atomic>
+#include <mutex>
 #include <queue>
 #include <utility>
 
@@ -75,7 +76,7 @@ class MultiplexServer
     buf->prepend(header, kHeaderLen);
     TcpConnectionPtr backendConn;
     {
-      MutexLockGuard lock(mutex_);
+      std::lock_guard<std::mutex> lock(mutex_);
       backendConn = backendConn_;
     }
     if (backendConn)
@@ -123,7 +124,7 @@ class MultiplexServer
 
         TcpConnectionPtr clientConn;
         {
-          MutexLockGuard lock(mutex_);
+          std::lock_guard<std::mutex> lock(mutex_);
           std::map<int, TcpConnectionPtr>::iterator it = clientConns_.find(id);
           if (it != clientConns_.end())
           {
@@ -148,7 +149,7 @@ class MultiplexServer
     {
       int id = -1;
       {
-        MutexLockGuard lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         if (!availIds_.empty())
         {
           id = availIds_.front();
@@ -181,7 +182,7 @@ class MultiplexServer
                  id, conn->peerAddress().toIpPort().c_str());
         sendBackendString(0, buf);
 
-        MutexLockGuard lock(mutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         if (backendConn_)
         {
           availIds_.push(id);
@@ -222,7 +223,7 @@ class MultiplexServer
     std::vector<TcpConnectionPtr> connsToDestroy;
     if (conn->connected())
     {
-      MutexLockGuard lock(mutex_);
+      std::lock_guard<std::mutex> lock(mutex_);
       backendConn_ = conn;
       assert(availIds_.empty());
       for (int i = 1; i <= kMaxConns; ++i)
@@ -232,7 +233,7 @@ class MultiplexServer
     }
     else
     {
-      MutexLockGuard lock(mutex_);
+      std::lock_guard<std::mutex> lock(mutex_);
       backendConn_.reset();
       connsToDestroy.reserve(clientConns_.size());
       for (std::map<int, TcpConnectionPtr>::iterator it = clientConns_.begin();
@@ -287,7 +288,7 @@ class MultiplexServer
   std::atomic<int64_t> receivedMessages_;
   int64_t oldCounter_;
   Timestamp startTime_;
-  MutexLock mutex_;
+  std::mutex mutex_;
   TcpConnectionPtr backendConn_;
   std::map<int, TcpConnectionPtr> clientConns_;
   std::queue<int> availIds_;

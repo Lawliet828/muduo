@@ -7,8 +7,6 @@ AnalyzeTemporaryDtors: false
 FormatStyle:     none
 User:            chenshuo
 CheckOptions:
-  - key:             google-runtime-references.WhiteListTypes
-    value:           'muduo::MutexLock'
   - key:             llvm-namespace-comment.ShortNamespaceLines
     value:           '10'
   - key:             llvm-namespace-comment.SpacesBeforeComments

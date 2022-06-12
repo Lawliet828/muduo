@@ -4,11 +4,12 @@
 #include "examples/memcached/server/Item.h"
 #include "examples/memcached/server/Session.h"
 
-#include "muduo/base/Mutex.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/net/TcpServer.h"
 #include "examples/wordcount/hash.h"
 
 #include <array>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -46,7 +47,7 @@ class MemcacheServer : muduo::noncopyable
   Options options_;
   const time_t startTime_;
 
-  mutable muduo::MutexLock mutex_;
+  mutable std::mutex mutex_;
   std::unordered_map<string, SessionPtr> sessions_;
 
   // a complicated solution to save memory
@@ -71,7 +72,7 @@ class MemcacheServer : muduo::noncopyable
   struct MapWithLock
   {
     ItemMap items;
-    mutable muduo::MutexLock mutex;
+    mutable std::mutex mutex;
   };
 
   const static int kShards = 4096;

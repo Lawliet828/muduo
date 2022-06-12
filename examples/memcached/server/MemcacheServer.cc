@@ -45,9 +45,9 @@ void MemcacheServer::stop()
 bool MemcacheServer::storeItem(const ItemPtr& item, const Item::UpdatePolicy policy, bool* exists)
 {
   assert(item->neededBytes() == 0);
-  MutexLock& mutex = shards_[item->hash() % kShards].mutex;
+  std::mutex& mutex = shards_[item->hash() % kShards].mutex;
   ItemMap& items = shards_[item->hash() % kShards].items;
-  MutexLockGuard lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   ItemMap::const_iterator it = items.find(item);
   *exists = it != items.end();
   if (policy == Item::kSet)
@@ -140,18 +140,18 @@ bool MemcacheServer::storeItem(const ItemPtr& item, const Item::UpdatePolicy pol
 
 ConstItemPtr MemcacheServer::getItem(const ConstItemPtr& key) const
 {
-  MutexLock& mutex = shards_[key->hash() % kShards].mutex;
+  std::mutex& mutex = shards_[key->hash() % kShards].mutex;
   const ItemMap& items = shards_[key->hash() % kShards].items;
-  MutexLockGuard lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   ItemMap::const_iterator it = items.find(key);
   return it != items.end() ? *it : ConstItemPtr();
 }
 
 bool MemcacheServer::deleteItem(const ConstItemPtr& key)
 {
-  MutexLock& mutex = shards_[key->hash() % kShards].mutex;
+  std::mutex& mutex = shards_[key->hash() % kShards].mutex;
   ItemMap& items = shards_[key->hash() % kShards].items;
-  MutexLockGuard lock(mutex);
+  std::lock_guard<std::mutex> lock(mutex);
   return items.erase(key) == 1;
 }
 
@@ -160,14 +160,14 @@ void MemcacheServer::onConnection(const TcpConnectionPtr& conn)
   if (conn->connected())
   {
     SessionPtr session(new Session(this, conn));
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     assert(sessions_.find(conn->name()) == sessions_.end());
     sessions_[conn->name()] = session;
     // assert(sessions_.size() == stats_.current_conns);
   }
   else
   {
-    MutexLockGuard lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     assert(sessions_.find(conn->name()) != sessions_.end());
     sessions_.erase(conn->name());
     // assert(sessions_.size() == stats_.current_conns);

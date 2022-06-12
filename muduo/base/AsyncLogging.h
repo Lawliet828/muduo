@@ -8,13 +8,13 @@
 
 #include "muduo/base/BlockingQueue.h"
 #include "muduo/base/BoundedBlockingQueue.h"
-#include "muduo/base/Condition.h"
 #include "muduo/base/CountDownLatch.h"
-#include "muduo/base/Mutex.h"
 #include "muduo/base/Thread.h"
 #include "muduo/base/LogStream.h"
 
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
 #include <vector>
 
 namespace muduo
@@ -48,7 +48,7 @@ class AsyncLogging : noncopyable
   void stop()
   {
     running_ = false;
-    cond_.notify();
+    cond_.notify_one();
     thread_.join();
   }
 
@@ -66,8 +66,8 @@ class AsyncLogging : noncopyable
   const off_t rollSize_;
   muduo::Thread thread_;
   muduo::CountDownLatch latch_;
-  muduo::MutexLock mutex_;
-  muduo::Condition cond_;
+  std::mutex mutex_;
+  std::condition_variable cond_;
   BufferPtr currentBuffer_;
   BufferPtr nextBuffer_;
   BufferVector buffers_;
