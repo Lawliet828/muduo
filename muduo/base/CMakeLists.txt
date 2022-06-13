@@ -2,7 +2,6 @@ set(base_SRCS
   AsyncLogging.cc
   CurrentThread.cc
   Date.cc
-  Exception.cc
   FileUtil.cc
   LogFile.cc
   Logging.cc

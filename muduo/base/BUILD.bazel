@@ -4,7 +4,6 @@ cc_library(
         "AsyncLogging.cc",
         "CurrentThread.cc",
         "Date.cc",
-        "Exception.cc",
         "FileUtil.cc",
         "LogFile.cc",
         "LogStream.cc",

@@ -6,29 +6,25 @@
 #ifndef MUDUO_BASE_EXCEPTION_H
 #define MUDUO_BASE_EXCEPTION_H
 
-#include "muduo/base/Types.h"
 #include <exception>
 
-namespace muduo
-{
+#include "muduo/base/CurrentThread.h"
+#include "muduo/base/Types.h"
 
-class Exception : public std::exception
-{
+namespace muduo {
+
+class Exception : public std::exception {
  public:
-  Exception(string what);
+  Exception(string what)
+      : message_(std::move(what)),
+        stack_(CurrentThread::stackTrace(/*demangle=*/false)) {}
   ~Exception() noexcept override = default;
 
   // default copy-ctor and operator= are okay.
 
-  const char* what() const noexcept override
-  {
-    return message_.c_str();
-  }
+  const char* what() const noexcept override { return message_.c_str(); }
 
-  const char* stackTrace() const noexcept
-  {
-    return stack_.c_str();
-  }
+  const char* stackTrace() const noexcept { return stack_.c_str(); }
 
  private:
   string message_;
