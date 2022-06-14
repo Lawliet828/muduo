@@ -1,0 +1,2 @@
+add_executable(easy_thread_pool easy_thread_pool/test.cc)
+target_link_libraries(easy_thread_pool muduo_net)

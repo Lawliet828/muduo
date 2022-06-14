@@ -22,6 +22,8 @@ add_subdirectory(twisted/finger)
 add_subdirectory(wordcount)
 add_subdirectory(zeromq)
 
+add_subdirectory(thread_pool)
+
 if(CARES_INCLUDE_DIR AND CARES_LIBRARY)
   add_subdirectory(cdns)
 else()
