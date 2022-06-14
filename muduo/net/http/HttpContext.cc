@@ -63,17 +63,17 @@ bool HttpContext::parseRequest(Buffer* buf, Timestamp receiveTime)
   bool hasMore = true;
   while (hasMore)
   {
-    if (state_ == kExpectRequestLine)
+    if (state_ == kExpectRequestLine) // 处于解析请求行状态
     {
       const char* crlf = buf->findCRLF();
       if (crlf)
       {
-        ok = processRequestLine(buf->peek(), crlf);
+        ok = processRequestLine(buf->peek(), crlf); // 解析请求行
         if (ok)
         {
-          request_.setReceiveTime(receiveTime);
-          buf->retrieveUntil(crlf + 2);
-          state_ = kExpectHeaders;
+          request_.setReceiveTime(receiveTime); // 设置请求时间
+          buf->retrieveUntil(crlf + 2); // 将请求行从buf中取回，包括\r\n
+          state_ = kExpectHeaders; // 将HttpContext状态改为kExpectHeaders
         }
         else
         {
@@ -102,14 +102,14 @@ bool HttpContext::parseRequest(Buffer* buf, Timestamp receiveTime)
           state_ = kGotAll;
           hasMore = false;
         }
-        buf->retrieveUntil(crlf + 2);
+        buf->retrieveUntil(crlf + 2); // 将header从buf中取回，包括\r\n
       }
       else
       {
         hasMore = false;
       }
     }
-    else if (state_ == kExpectBody)
+    else if (state_ == kExpectBody) // 当前还不支持请求中带body
     {
       // FIXME:
     }
