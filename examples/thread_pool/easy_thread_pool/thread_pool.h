@@ -25,7 +25,7 @@ class ThreadPool {
     assert(threads_.empty());
     threads_.reserve(thread_num_);
     for (int i = 0; i < thread_num_; ++i) {
-      threads_.push_back(std::thread(&ThreadPool::thread_loop, this));
+      threads_.push_back(std::thread(&ThreadPool::RunTask, this));
     }
   }
 
@@ -44,7 +44,7 @@ class ThreadPool {
   ThreadPool(const ThreadPool&) = delete;
   const ThreadPool& operator=(const ThreadPool&) = delete;
 
-  void add_task(const Task& task) {
+  void AddTask(const Task& task) {
     std::unique_lock<std::mutex> lock(mutex_);
     cond_.wait(lock, [&] {
       return stop_ || static_cast<int>(tasks_.size()) < thread_num_;
@@ -56,13 +56,13 @@ class ThreadPool {
   }
 
  private:
-  void thread_loop() {
-    LOG_INFO << "ThreadPool::ThreadLoop() start.";
+  void RunTask() {
+    LOG_INFO << "ThreadPool::RunTask() start.";
     while (true) {
       std::unique_lock<std::mutex> lock(mutex_);
       cond_.wait(lock, [&] { return stop_ || !tasks_.empty(); });
       if (stop_ && tasks_.empty()) {
-        return;
+        break;
       }
 
       Task task = std::move(tasks_.front());
@@ -75,7 +75,7 @@ class ThreadPool {
 
       cond_.notify_one();
     }
-    LOG_INFO << "ThreadPool::ThreadLoop() exit.";
+    LOG_INFO << "ThreadPool::RunTask() exit.";
   }
 
   bool stop_;
