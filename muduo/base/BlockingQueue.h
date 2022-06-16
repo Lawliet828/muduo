@@ -14,36 +14,28 @@
 
 #include "muduo/base/noncopyable.h"
 
-namespace muduo
-{
+namespace muduo {
 
-template<typename T>
-class BlockingQueue : noncopyable
-{
+template <typename T>
+class BlockingQueue : noncopyable {
  public:
   using queue_type = std::deque<T>;
 
-  BlockingQueue()
-    : queue_()
-  {
-  }
+  BlockingQueue() : queue_() {}
 
-  void put(const T& x)
-  {
+  void put(const T& x) {
     std::unique_lock<std::mutex> lock(mutex_);
     queue_.push_back(x);
     notEmpty_.notify_one();
   }
 
-  void put(T&& x)
-  {
+  void put(T&& x) {
     std::unique_lock<std::mutex> lock(mutex_);
     queue_.push_back(std::move(x));
     notEmpty_.notify_one();
   }
 
-  T take()
-  {
+  T take() {
     std::unique_lock<std::mutex> lock(mutex_);
     notEmpty_.wait(lock, [&]() { return !queue_.empty(); });
     assert(!queue_.empty());
@@ -52,9 +44,8 @@ class BlockingQueue : noncopyable
     return front;
   }
 
-  queue_type drain()
-  {
-    std::deque<T> queue;
+  queue_type drain() {
+    queue_type queue;
     {
       std::lock_guard<std::mutex> lock(mutex_);
       queue = std::move(queue_);
@@ -63,8 +54,7 @@ class BlockingQueue : noncopyable
     return queue;
   }
 
-  size_t size() const
-  {
+  size_t size() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return queue_.size();
   }
