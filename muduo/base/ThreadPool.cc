@@ -26,11 +26,9 @@ void ThreadPool::start(int numThreads) {
   running_ = true;
   threads_.reserve(numThreads);
   for (int i = 0; i < numThreads; ++i) {
-    char id[32];
-    snprintf(id, sizeof id, "%d", i + 1);
-    threads_.emplace_back(new muduo::Thread(
-        std::bind(&ThreadPool::runInThread, this), name_ + id));
-    threads_[i]->start();
+    // char id[32];
+    // snprintf(id, sizeof id, "%d", i + 1);
+    threads_.emplace_back(new std::thread(&ThreadPool::runInThread, this));
   }
   if (numThreads == 0 && threadInitCallback_) {
     threadInitCallback_();
@@ -50,7 +48,7 @@ void ThreadPool::stop() {
 }
 
 size_t ThreadPool::queueSize() const {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   return queue_.size();
 }
 
@@ -59,9 +57,8 @@ void ThreadPool::run(Task task) {
     task();
   } else {
     std::unique_lock<std::mutex> lock(mutex_);
-    while (isFull() && running_) {
-      notFull_.wait(lock);
-    }
+    notFull_.wait(lock, [&]() { return !isFull() || !running_; });
+
     if (!running_) return;
     assert(!isFull());
 
@@ -72,10 +69,8 @@ void ThreadPool::run(Task task) {
 
 ThreadPool::Task ThreadPool::take() {
   std::unique_lock<std::mutex> lock(mutex_);
-  // always use a while-loop, due to spurious wakeup
-  while (queue_.empty() && running_) {
-    notEmpty_.wait(lock);
-  }
+  notEmpty_.wait(lock, [&]() { return !queue_.empty() || !running_; });
+
   Task task;
   if (!queue_.empty()) {
     task = queue_.front();

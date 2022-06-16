@@ -8,10 +8,12 @@
 
 #include <condition_variable>
 #include <deque>
+#include <functional>
 #include <mutex>
+#include <thread>
 #include <vector>
 
-#include "muduo/base/Thread.h"
+#include "muduo/base/noncopyable.h"
 #include "muduo/base/Types.h"
 
 namespace muduo {
@@ -52,7 +54,7 @@ class ThreadPool : noncopyable {
   std::condition_variable notFull_;
   string name_;
   Task threadInitCallback_;
-  std::vector<std::unique_ptr<muduo::Thread>> threads_;
+  std::vector<std::unique_ptr<std::thread>> threads_;
   std::deque<Task> queue_;
   size_t maxQueueSize_;
   bool running_;

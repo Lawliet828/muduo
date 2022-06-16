@@ -67,14 +67,13 @@ void test2()
   pool.setMaxQueueSize(5);
   pool.start(3);
 
-  muduo::Thread thread1([&pool]()
+  std::thread thread1([&pool]()
   {
     for (int i = 0; i < 20; ++i)
     {
       pool.run(std::bind(longTask, i));
     }
-  }, "thread1");
-  thread1.start();
+  });
 
   muduo::CurrentThread::sleepUsec(5000000);
   LOG_WARN << "stop pool";
