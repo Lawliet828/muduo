@@ -12,10 +12,12 @@
 #define MUDUO_NET_EVENTLOOPTHREAD_H
 
 #include <condition_variable>
+#include <functional>
 #include <mutex>
+#include <thread>
 
 #include "muduo/base/noncopyable.h"
-#include "muduo/base/Thread.h"
+#include "muduo/base/Types.h"
 
 namespace muduo
 {
@@ -39,7 +41,7 @@ class EventLoopThread : noncopyable
 
   EventLoop* loop_;
   bool exiting_;
-  Thread thread_;
+  std::thread thread_;
   std::mutex mutex_;
   std::condition_variable cond_;
   ThreadInitCallback callback_; // 回调函数在EventLoop::loop事件循环之前被调用

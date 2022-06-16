@@ -1,6 +1,5 @@
 #include "muduo/net/EventLoopThread.h"
 #include "muduo/net/EventLoop.h"
-#include "muduo/base/Thread.h"
 #include "muduo/base/CountDownLatch.h"
 
 #include <stdio.h>

@@ -19,7 +19,6 @@ EventLoopThread::EventLoopThread(const ThreadInitCallback& cb,
                                  const string& name)
   : loop_(NULL),
     exiting_(false),
-    thread_(std::bind(&EventLoopThread::threadFunc, this), name),
     callback_(cb)
 {
 }
@@ -32,14 +31,16 @@ EventLoopThread::~EventLoopThread()
     // still a tiny chance to call destructed object, if threadFunc exits just now.
     // but when EventLoopThread destructs, usually programming is exiting anyway.
     loop_->quit();
+  }
+  if (thread_.joinable()) {
     thread_.join();
   }
 }
 
 EventLoop* EventLoopThread::startLoop()
 {
-  assert(!thread_.started());
-  thread_.start();
+  assert(!thread_);
+  thread_ = std::thread(&EventLoopThread::threadFunc, this);
 
   EventLoop* loop = NULL;
   {
