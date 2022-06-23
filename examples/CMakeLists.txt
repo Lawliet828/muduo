@@ -23,6 +23,7 @@ add_subdirectory(wordcount)
 add_subdirectory(zeromq)
 
 add_subdirectory(thread_pool)
+add_subdirectory(token_bucket)
 
 if(CARES_INCLUDE_DIR AND CARES_LIBRARY)
   add_subdirectory(cdns)
