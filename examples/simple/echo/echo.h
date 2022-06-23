@@ -3,23 +3,60 @@
 
 #include "muduo/net/TcpServer.h"
 
-// RFC 862
-class EchoServer
-{
- public:
-  EchoServer(muduo::net::EventLoop* loop,
-             const muduo::net::InetAddress& listenAddr);
+#include "muduo/base/Logging.h"
+#include "muduo/net/EventLoop.h"
+#include "muduo/net/InetAddress.h"
 
-  void start();  // calls server_.start();
+#include <utility>
+
+#include <stdio.h>
+#include <unistd.h>
+
+using namespace muduo;
+using namespace muduo::net;
+using std::placeholders::_1;
+using std::placeholders::_2;
+using std::placeholders::_3;
+
+int numThreads = 0;
+
+class EchoServer : public muduo::net::TcpServer {
+ public:
+  EchoServer(EventLoop* loop, const InetAddress& listenAddr)
+    : TcpServer(loop, listenAddr, "EchoServer") {
+    setConnectionCallback(
+        std::bind(&EchoServer::onConnection, this, _1));
+    setMessageCallback(
+        std::bind(&EchoServer::onMessage, this, _1, _2, _3));
+    setThreadNum(numThreads);
+  }
 
  private:
-  void onConnection(const muduo::net::TcpConnectionPtr& conn);
+  void onConnection(const TcpConnectionPtr& conn)
+  {
+    LOG_TRACE << conn->peerAddress().toIpPort() << " -> "
+        << conn->localAddress().toIpPort() << " is "
+        << (conn->connected() ? "UP" : "DOWN");
+    LOG_INFO << conn->getTcpInfoString();
 
-  void onMessage(const muduo::net::TcpConnectionPtr& conn,
-                 muduo::net::Buffer* buf,
-                 muduo::Timestamp time);
+    conn->send("hello\n");
+  }
 
-  muduo::net::TcpServer server_;
+  void onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp time)
+  {
+    string msg(buf->retrieveAllAsString());
+    LOG_TRACE << conn->name() << " recv " << msg.size() << " bytes at " << time.toString();
+    if (msg == "exit\n")
+    {
+      conn->send("bye\n");
+      conn->shutdown();
+    }
+    if (msg == "quit\n")
+    {
+      getLoop()->quit();
+    }
+    conn->send(msg);
+  }
 };
 
 #endif  // MUDUO_EXAMPLES_SIMPLE_ECHO_ECHO_H
