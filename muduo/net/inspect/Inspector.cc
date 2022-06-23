@@ -70,6 +70,10 @@ Inspector::Inspector(EventLoop* loop,
   performanceInspector_.reset(new PerformanceInspector);
   performanceInspector_->registerCommands(this);
 #endif
+  // 这样子做法是为了防止竞态问题
+  // 如果直接调用start，（当前线程不是loop所属的IO线程，是主线程）那么有可能，当前构造函数还没返回，
+  // HttpServer所在的IO线程可能已经收到了http客户端的请求了（因为这时候HttpServer已启动），那么就会回调
+  // Inspector::onRequest，而这时候构造函数还没返回，也就是说对象还没完全构造好
   loop->runAfter(0, std::bind(&Inspector::start, this)); // little race condition
 }
 
@@ -119,12 +123,12 @@ void Inspector::onRequest(const HttpRequest& req, HttpResponse* resp)
       for (const auto& it : list)
       {
         result += "/";
-        result += helpListI->first;
+        result += helpListI->first; // module
         result += "/";
-        result += it.first;
+        result += it.first; // command
         size_t len = helpListI->first.size() + it.first.size();
         result += string(len >= 25 ? 1 : 25 - len, ' ');
-        result += it.second;
+        result += it.second; // help
         result += "\n";
       }
     }
@@ -136,9 +140,6 @@ void Inspector::onRequest(const HttpRequest& req, HttpResponse* resp)
   else
   {
     std::vector<string> result = split(req.path());
-    // boost::split(result, req.path(), boost::is_any_of("/"));
-    //std::copy(result.begin(), result.end(), std::ostream_iterator<string>(std::cout, ", "));
-    //std::cout << "\n";
     bool ok = false;
     if (result.size() == 0)
     {
@@ -173,14 +174,14 @@ void Inspector::onRequest(const HttpRequest& req, HttpResponse* resp)
         CommandList::const_iterator it = commList.find(command);
         if (it != commList.end())
         {
-          ArgList args(result.begin()+2, result.end());
+          ArgList args(result.begin()+2, result.end()); // 传递给回调函数的参数表
           if (it->second)
           {
             resp->setStatusCode(HttpResponse::k200Ok);
             resp->setStatusMessage("OK");
             resp->setContentType("text/plain");
             const Callback& cb = it->second;
-            resp->setBody(cb(req.method(), args));
+            resp->setBody(cb(req.method(), args)); // 调用cb将返回的字符串传给setBody
             ok = true;
           }
         }
