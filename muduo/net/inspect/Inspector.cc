@@ -10,7 +10,6 @@
 #include "muduo/net/inspect/Inspector.h"
 
 #include "muduo/base/Logging.h"
-#include "muduo/base/Thread.h"
 #include "muduo/net/EventLoop.h"
 #include "muduo/net/http/HttpRequest.h"
 #include "muduo/net/http/HttpResponse.h"
