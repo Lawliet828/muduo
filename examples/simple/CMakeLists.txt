@@ -1,4 +1,4 @@
-add_executable(simple_chargen chargen/chargen.cc chargen/main.cc)
+add_executable(simple_chargen chargen/main.cc)
 target_link_libraries(simple_chargen muduo_net)
 
 add_executable(simple_daytime daytime/main.cc)
@@ -10,13 +10,11 @@ target_link_libraries(simple_discard muduo_net)
 add_executable(simple_echo echo/main.cc)
 target_link_libraries(simple_echo muduo_net)
 
-add_executable(simple_time time/time.cc time/main.cc)
+add_executable(simple_time time/main.cc)
 target_link_libraries(simple_time muduo_net)
 
 add_executable(simple_allinone
   allinone/allinone.cc
-  chargen/chargen.cc
-  time/time.cc
   )
 target_link_libraries(simple_allinone muduo_net)
 
