@@ -39,20 +39,20 @@ HttpServer::HttpServer(EventLoop* loop,
                        const InetAddress& listenAddr,
                        const string& name,
                        TcpServer::Option option)
-  : server_(loop, listenAddr, name, option),
+  : TcpServer(loop, listenAddr, name, option),
     httpCallback_(detail::defaultHttpCallback)
 {
-  server_.setConnectionCallback(
+  setConnectionCallback(
       std::bind(&HttpServer::onConnection, this, _1));
-  server_.setMessageCallback(
+  setMessageCallback(
       std::bind(&HttpServer::onMessage, this, _1, _2, _3));
 }
 
 void HttpServer::start()
 {
-  LOG_WARN << "HttpServer[" << server_.name()
-    << "] starts listening on " << server_.ipPort();
-  server_.start();
+  LOG_WARN << "HttpServer[" << name()
+    << "] starts listening on " << ipPort();
+  TcpServer::start();
 }
 
 void HttpServer::onConnection(const TcpConnectionPtr& conn)

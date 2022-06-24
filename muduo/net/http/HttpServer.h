@@ -25,7 +25,7 @@ class HttpResponse;
 /// It is not a fully HTTP 1.1 compliant server, but provides minimum features
 /// that can communicate with HttpClient and Web browser.
 /// It is synchronous, just like Java Servlet.
-class HttpServer : noncopyable
+class HttpServer : public muduo::net::TcpServer
 {
  public:
   typedef std::function<void (const HttpRequest&,
@@ -36,17 +36,10 @@ class HttpServer : noncopyable
              const string& name,
              TcpServer::Option option = TcpServer::kNoReusePort);
 
-  EventLoop* getLoop() const { return server_.getLoop(); }
-
   /// Not thread safe, callback be registered before calling start().
   void setHttpCallback(const HttpCallback& cb)
   {
     httpCallback_ = cb;
-  }
-
-  void setThreadNum(int numThreads)
-  {
-    server_.setThreadNum(numThreads);
   }
 
   void start();
@@ -58,7 +51,6 @@ class HttpServer : noncopyable
                  Timestamp receiveTime);
   void onRequest(const TcpConnectionPtr&, const HttpRequest&);
 
-  TcpServer server_;
   HttpCallback httpCallback_; // 在处理http请求(即调用onRequest)的过程中回调此函数，对请求进行具体的处理
 };
 
