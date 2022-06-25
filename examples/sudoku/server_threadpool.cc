@@ -129,6 +129,7 @@ class SudokuServer
 int main(int argc, char* argv[])
 {
   LOG_INFO << "pid = " << getpid() << ", tid = " << CurrentThread::tid();
+  // numThreads为计算线程池的线程数
   int numThreads = 0;
   if (argc > 1)
   {

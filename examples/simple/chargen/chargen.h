@@ -26,7 +26,7 @@ class ChargenServer : public muduo::net::TcpServer {
       loop->runEvery(3.0, std::bind(&ChargenServer::printThroughput, this));
     }
 
-    string line;
+    std::string line;
     for (int i = 33; i < 127; ++i) {
       line.push_back(char(i));
     }
@@ -50,7 +50,7 @@ class ChargenServer : public muduo::net::TcpServer {
 
   void onMessage(const muduo::net::TcpConnectionPtr& conn,
                  muduo::net::Buffer* buf, muduo::Timestamp time) {
-    string msg(buf->retrieveAllAsString());
+    std::string msg(buf->retrieveAllAsString());
     LOG_INFO << conn->name() << " discards " << msg.size()
              << " bytes received at " << time.toString();
   }
@@ -60,6 +60,7 @@ class ChargenServer : public muduo::net::TcpServer {
     conn->send(message_);
   }
 
+  // 打印吞吐量
   void printThroughput() {
     Timestamp endTime = Timestamp::now();
     double time = timeDifference(endTime, startTime_);

@@ -49,7 +49,7 @@ class SudokuServer
       const char* crlf = buf->findCRLF();
       if (crlf)
       {
-        string request(buf->peek(), crlf);
+        std::string request(buf->peek(), crlf);
         buf->retrieveUntil(crlf + 2);
         len = buf->readableBytes();
         if (!processRequest(conn, request))
@@ -89,7 +89,7 @@ class SudokuServer
       puzzle = request;
     }
 
-    if (puzzle.size() == implicit_cast<size_t>(kCells))
+    if (puzzle.size() == static_cast<size_t>(kCells))
     {
       LOG_DEBUG << conn->name();
       string result = solveSudoku(puzzle);
@@ -125,3 +125,7 @@ int main(int argc, char* argv[])
   loop.loop();
 }
 
+/**
+ * reactor 只有一个IO线程
+ * 这个IO线程既负责listenfd，也负责connfd
+ */
