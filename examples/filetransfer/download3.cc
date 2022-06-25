@@ -83,3 +83,6 @@ int main(int argc, char* argv[])
   }
 }
 
+/**
+ * 实际测试中, download和download2都能退出, download3不能退出, 原因待调查
+ */
