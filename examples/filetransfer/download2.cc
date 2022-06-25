@@ -30,6 +30,8 @@ void onConnection(const TcpConnectionPtr& conn)
     FILE* fp = ::fopen(g_file, "rb");
     if (fp)
     {
+      // 将TcpConnection对象与fp绑定
+      // 通过这种方法, 我们就不需要额外再用一个map容器来管理对应关系
       conn->setContext(fp);
       char buf[kBufSize];
       size_t nread = ::fread(buf, 1, sizeof buf, fp);

@@ -11,9 +11,9 @@ using namespace muduo::net;
 const char* g_file = NULL;
 
 // FIXME: use FileUtil::readFile()
-string readFile(const char* filename)
+std::string readFile(const char* filename)
 {
-  string content;
+  std::string content;
   FILE* fp = ::fopen(filename, "rb");
   if (fp)
   {
@@ -43,12 +43,16 @@ void onConnection(const TcpConnectionPtr& conn)
   LOG_INFO << "FileServer - " << conn->peerAddress().toIpPort() << " -> "
            << conn->localAddress().toIpPort() << " is "
            << (conn->connected() ? "UP" : "DOWN");
-  if (conn->connected())
-  {
+  if (conn->connected()) {
     LOG_INFO << "FileServer - Sending file " << g_file
              << " to " << conn->peerAddress().toIpPort();
     conn->setHighWaterMarkCallback(onHighWaterMark, 64*1024);
-    string fileContent = readFile(g_file);
+    std::string fileContent = readFile(g_file);
+    /**
+     * send函数是非阻塞的, 立刻返回,
+     * 不用担心数据什么时候给对等端, 这个由网络库负责
+     * send之后立即调用shutdown没有问题, shutdown内部实现仅仅关闭写入这一半
+     */
     conn->send(fileContent);
     conn->shutdown();
     LOG_INFO << "FileServer - done";

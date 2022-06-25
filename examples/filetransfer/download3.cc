@@ -31,6 +31,7 @@ void onConnection(const TcpConnectionPtr& conn)
     FILE* fp = ::fopen(g_file, "rb");
     if (fp)
     {
+      // 表示ctx引用计数减为0时, 要销毁fp是通过fclose来完成的, 而不是通过析构函数
       FilePtr ctx(fp, ::fclose);
       conn->setContext(ctx);
       char buf[kBufSize];

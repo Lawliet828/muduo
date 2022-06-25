@@ -7,3 +7,5 @@ target_link_libraries(filetransfer_download2 muduo_net)
 add_executable(filetransfer_download3 download3.cc)
 target_link_libraries(filetransfer_download3 muduo_net)
 
+add_executable(filetransfer_test filetransfer_test.cc)
+target_link_libraries(filetransfer_test muduo_net)
