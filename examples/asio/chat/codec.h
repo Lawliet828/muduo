@@ -10,7 +10,7 @@ class LengthHeaderCodec : muduo::noncopyable
 {
  public:
   typedef std::function<void (const muduo::net::TcpConnectionPtr&,
-                                const muduo::string& message,
+                                const std::string& message,
                                 muduo::Timestamp)> StringMessageCallback;
 
   explicit LengthHeaderCodec(const StringMessageCallback& cb)
@@ -37,12 +37,13 @@ class LengthHeaderCodec : muduo::noncopyable
       else if (buf->readableBytes() >= len + kHeaderLen)
       {
         buf->retrieve(kHeaderLen);
-        muduo::string message(buf->peek(), len);
+        std::string message(buf->peek(), len);
         messageCallback_(conn, message, receiveTime);
         buf->retrieve(len);
       }
       else
       {
+        // 未达到一条完整的消息
         break;
       }
     }

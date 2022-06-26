@@ -44,6 +44,7 @@ class ChatServer : noncopyable
         << conn->localAddress().toIpPort() << " is "
         << (conn->connected() ? "UP" : "DOWN");
 
+    // 有多个IO线程，因而这里的connections_需要用mutex保护
     std::lock_guard<std::mutex> lock(mutex_);
     if (conn->connected())
     {
@@ -59,6 +60,11 @@ class ChatServer : noncopyable
                        const string& message,
                        Timestamp)
   {
+    /**
+     * 有多个IO线程，因而这里的connections_需要用mutex保护
+     * 由于mutex的存在, 多线程并不能并发执行, 而是串行的
+     * 存在较高的锁竞争, 效率较低
+     */
     std::lock_guard<std::mutex> lock(mutex_);
     for (ConnectionList::iterator it = connections_.begin();
         it != connections_.end();

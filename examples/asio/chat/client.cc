@@ -37,6 +37,7 @@ class ChatClient : noncopyable
     client_.disconnect();
   }
 
+  // 该函数在主线程中执行
   void write(const StringPiece& message)
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -47,6 +48,7 @@ class ChatClient : noncopyable
   }
 
  private:
+  // 该函数在IO线程中执行，IO线程与主线程不在同一个线程
   void onConnection(const TcpConnectionPtr& conn)
   {
     LOG_INFO << conn->localAddress().toIpPort() << " -> "

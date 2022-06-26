@@ -64,10 +64,13 @@ class ChatServer : noncopyable
     LOG_DEBUG;
 
     std::lock_guard<std::mutex> lock(mutex_);
+    // 转发消息给所有客户端，高效转发（多线程来转发）
     for (std::set<EventLoop*>::iterator it = loops_.begin();
         it != loops_.end();
         ++it)
     {
+      // 1、让对应的IO线程来执行distributeMessage
+      // 2、distributeMessage不受mutex_保护
       (*it)->queueInLoop(f);
     }
     LOG_DEBUG;

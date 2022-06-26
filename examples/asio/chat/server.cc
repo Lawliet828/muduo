@@ -12,6 +12,12 @@
 using namespace muduo;
 using namespace muduo::net;
 
+/**
+ * 如何处理错误的消息
+ * 1. 带上一个应用层的校验信息，如果校验失败，则关闭连接
+ * 2. 服务器应该有空闲断开功能，如果连接超过一定时间没有收到消息，则关闭连接
+ */
+
 class ChatServer : noncopyable
 {
  public:
@@ -38,6 +44,7 @@ class ChatServer : noncopyable
              << conn->localAddress().toIpPort() << " is "
              << (conn->connected() ? "UP" : "DOWN");
 
+    // 只有一个IO线程，因而这里的connections_不需要用mutex保护
     if (conn->connected())
     {
       connections_.insert(conn);
