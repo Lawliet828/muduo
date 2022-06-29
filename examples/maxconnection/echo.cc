@@ -34,6 +34,7 @@ void EchoServer::onConnection(const TcpConnectionPtr& conn)
     ++numConnected_;
     if (numConnected_ > kMaxConnections_)
     {
+      conn->send("too many connections\r\n", strlen("too many connections\r\n"));
       conn->shutdown();
       conn->forceCloseWithDelay(3.0);  // > round trip of the whole Internet.
     }
