@@ -72,7 +72,7 @@ void EchoServer::onConnection(const TcpConnectionPtr& conn)
     node.lastReceiveTime = Timestamp::now();
     connectionList_.push_back(conn);
     node.position = --connectionList_.end();
-    conn->setContext(node);
+    conn->setContext(node); // 将TcpConnection与Node关联，以便得到conn，就能得到node
   }
   else
   {
@@ -95,6 +95,7 @@ void EchoServer::onMessage(const TcpConnectionPtr& conn,
   assert(conn->getContext().has_value());
   Node* node = std::any_cast<Node>(conn->getMutableContext());
   node->lastReceiveTime = time;
+  // 时间更新了，需要将连接移至列表末端，以保证列表是按最后更新时刻排序
   connectionList_.splice(connectionList_.end(), connectionList_, node->position);
   assert(node->position == --connectionList_.end());
 
@@ -127,13 +128,13 @@ void EchoServer::onTimer()
         LOG_WARN << "Time jump";
         n->lastReceiveTime = now;
       }
-      else
+      else // age >= 0且age <= idleSeconds_，说明未超时
       {
         break;
       }
       ++it;
     }
-    else
+    else // 说明连接已关闭
     {
       LOG_WARN << "Expired";
       it = connectionList_.erase(it);
