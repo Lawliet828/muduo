@@ -14,7 +14,6 @@ set(net_SRCS
   EventLoopThread.cc
   EventLoopThreadPool.cc
   InetAddress.cc
-  Poller.cc
   poller/DefaultPoller.cc
   poller/EPollPoller.cc
   poller/PollPoller.cc

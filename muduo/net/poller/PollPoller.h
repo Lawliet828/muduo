@@ -11,24 +11,20 @@
 #ifndef MUDUO_NET_POLLER_POLLPOLLER_H
 #define MUDUO_NET_POLLER_POLLPOLLER_H
 
-#include "muduo/net/Poller.h"
-
 #include <vector>
+
+#include "muduo/net/Poller.h"
 
 struct pollfd;
 
-namespace muduo
-{
-namespace net
-{
+namespace muduo {
+namespace net {
 
 ///
 /// IO Multiplexing with poll(2).
 ///
-class PollPoller : public Poller
-{
+class PollPoller : public Poller {
  public:
-
   PollPoller(EventLoop* loop);
   ~PollPoller() override;
 
@@ -37,8 +33,7 @@ class PollPoller : public Poller
   void removeChannel(Channel* channel) override;
 
  private:
-  void fillActiveChannels(int numEvents,
-                          ChannelList* activeChannels) const;
+  void fillActiveChannels(int numEvents, ChannelList* activeChannels) const;
 
   typedef std::vector<struct pollfd> PollFdList;
   PollFdList pollfds_;

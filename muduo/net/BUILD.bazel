@@ -9,7 +9,6 @@ cc_library(
         "EventLoopThread.cc",
         "EventLoopThreadPool.cc",
         "InetAddress.cc",
-        "Poller.cc",
         "Socket.cc",
         "SocketsOps.cc",
         "TcpClient.cc",

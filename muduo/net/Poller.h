@@ -15,26 +15,23 @@
 #include <vector>
 
 #include "muduo/base/Timestamp.h"
+#include "muduo/net/Channel.h"
 #include "muduo/net/EventLoop.h"
 
-namespace muduo
-{
-namespace net
-{
-
-class Channel;
+namespace muduo {
+namespace net {
 
 ///
 /// Base class for IO Multiplexing
 ///
 /// This class doesn't own the Channel objects.
-class Poller : noncopyable
-{
+class Poller : noncopyable {
  public:
   typedef std::vector<Channel*> ChannelList;
 
-  Poller(EventLoop* loop);
-  virtual ~Poller();
+  Poller(EventLoop* loop) : ownerLoop_(loop) {}
+
+  virtual ~Poller() = default;
 
   /// Polls the I/O events.
   /// Must be called in the loop thread.
@@ -48,14 +45,15 @@ class Poller : noncopyable
   /// Must be called in the loop thread.
   virtual void removeChannel(Channel* channel) = 0;
 
-  virtual bool hasChannel(Channel* channel) const;
+  virtual bool hasChannel(Channel* channel) const {
+    assertInLoopThread();
+    ChannelMap::const_iterator it = channels_.find(channel->fd());
+    return it != channels_.end() && it->second == channel;
+  }
 
   static Poller* newDefaultPoller(EventLoop* loop);
 
-  void assertInLoopThread() const
-  {
-    ownerLoop_->assertInLoopThread();
-  }
+  void assertInLoopThread() const { ownerLoop_->assertInLoopThread(); }
 
  protected:
   // 文件描述符 => Channel*
@@ -63,7 +61,7 @@ class Poller : noncopyable
   ChannelMap channels_;
 
  private:
-  EventLoop* ownerLoop_; // Poller所属的EventLoop
+  EventLoop* ownerLoop_;  // Poller所属的EventLoop
 };
 
 }  // namespace net
