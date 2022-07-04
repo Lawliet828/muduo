@@ -11,16 +11,14 @@
 #ifndef MUDUO_NET_CHANNEL_H
 #define MUDUO_NET_CHANNEL_H
 
-#include "muduo/base/noncopyable.h"
-#include "muduo/base/Timestamp.h"
-
 #include <functional>
 #include <memory>
 
-namespace muduo
-{
-namespace net
-{
+#include "muduo/base/Timestamp.h"
+#include "muduo/base/noncopyable.h"
+
+namespace muduo {
+namespace net {
 
 class EventLoop;
 
@@ -30,8 +28,7 @@ class EventLoop;
 /// This class doesn't own the file descriptor.
 /// The file descriptor could be a socket,
 /// an eventfd, a timerfd, or a signalfd
-class Channel : noncopyable
-{
+class Channel : noncopyable {
  public:
   typedef std::function<void()> EventCallback;
   typedef std::function<void(Timestamp)> ReadEventCallback;
@@ -40,14 +37,10 @@ class Channel : noncopyable
   ~Channel();
 
   void handleEvent(Timestamp receiveTime);
-  void setReadCallback(ReadEventCallback cb)
-  { readCallback_ = std::move(cb); }
-  void setWriteCallback(EventCallback cb)
-  { writeCallback_ = std::move(cb); }
-  void setCloseCallback(EventCallback cb)
-  { closeCallback_ = std::move(cb); }
-  void setErrorCallback(EventCallback cb)
-  { errorCallback_ = std::move(cb); }
+  void setReadCallback(ReadEventCallback cb) { readCallback_ = std::move(cb); }
+  void setWriteCallback(EventCallback cb) { writeCallback_ = std::move(cb); }
+  void setCloseCallback(EventCallback cb) { closeCallback_ = std::move(cb); }
+  void setErrorCallback(EventCallback cb) { errorCallback_ = std::move(cb); }
 
   /// Tie this channel to the owner object managed by shared_ptr,
   /// prevent the owner object being destroyed in handleEvent.
@@ -55,7 +48,7 @@ class Channel : noncopyable
 
   int fd() const { return fd_; }
   int events() const { return events_; }
-  void set_revents(int revt) { revents_ = revt; } // used by pollers
+  void set_revents(int revt) { revents_ = revt; }  // used by pollers
   // int revents() const { return revents_; }
   bool isNoneEvent() const { return events_ == kNoneEvent; }
 
@@ -91,15 +84,15 @@ class Channel : noncopyable
   static const int kWriteEvent;
 
   EventLoop* loop_;
-  const int  fd_;
-  int        events_; // 关注的事件
-  int        revents_; // epoll/poll返回的事件
-  int        index_; // used by Poller.
-  bool       logHup_;
+  const int fd_;
+  int events_;   // 关注的事件
+  int revents_;  // epoll/poll返回的事件
+  int index_;    // used by Poller.
+  bool logHup_;
 
   std::weak_ptr<void> tie_;
   bool tied_;
-  bool eventHandling_; // 是否处于处理事件中
+  bool eventHandling_;  // 是否处于处理事件中
   bool addedToLoop_;
   ReadEventCallback readCallback_;
   EventCallback writeCallback_;
