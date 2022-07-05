@@ -6,40 +6,31 @@
 #ifndef MUDUO_BASE_LOGSTREAM_H
 #define MUDUO_BASE_LOGSTREAM_H
 
-#include "muduo/base/noncopyable.h"
+#include <assert.h>
+#include <string.h>  // memcpy
+
 #include "muduo/base/StringPiece.h"
 #include "muduo/base/Types.h"
-#include <assert.h>
-#include <string.h> // memcpy
+#include "muduo/base/noncopyable.h"
 
-namespace muduo
-{
+namespace muduo {
 
-namespace detail
-{
+namespace detail {
 
 const int kSmallBuffer = 4000;
-const int kLargeBuffer = 4000*1000;
+const int kLargeBuffer = 4000 * 1000;
 
 // SIZE为非类型参数
-template<int SIZE>
-class FixedBuffer : noncopyable
-{
+template <int SIZE>
+class FixedBuffer : noncopyable {
  public:
-  FixedBuffer()
-    : cur_(data_)
-  {
-  }
+  FixedBuffer() : cur_(data_) {}
 
-  ~FixedBuffer()
-  {
-  }
+  ~FixedBuffer() {}
 
-  void append(const char* /*restrict*/ buf, size_t len)
-  {
+  void append(const char* /*restrict*/ buf, size_t len) {
     // FIXME: append partially
-    if (implicit_cast<size_t>(avail()) > len)
-    {
+    if (implicit_cast<size_t>(avail()) > len) {
       memcpy(cur_, buf, len);
       cur_ += len;
     }
@@ -71,14 +62,13 @@ class FixedBuffer : noncopyable
 
 }  // namespace detail
 
-class LogStream : noncopyable
-{
+class LogStream : noncopyable {
   typedef LogStream self;
+
  public:
   typedef detail::FixedBuffer<detail::kSmallBuffer> Buffer;
 
-  self& operator<<(bool v)
-  {
+  self& operator<<(bool v) {
     buffer_.append(v ? "1" : "0", 1);
     return *this;
   }
@@ -94,16 +84,14 @@ class LogStream : noncopyable
 
   self& operator<<(const void*);
 
-  self& operator<<(float v)
-  {
+  self& operator<<(float v) {
     *this << static_cast<double>(v);
     return *this;
   }
   self& operator<<(double);
   // self& operator<<(long double);
 
-  self& operator<<(char v)
-  {
+  self& operator<<(char v) {
     buffer_.append(&v, 1);
     return *this;
   }
@@ -111,38 +99,30 @@ class LogStream : noncopyable
   // self& operator<<(signed char);
   // self& operator<<(unsigned char);
 
-  self& operator<<(const char* str)
-  {
-    if (str)
-    {
+  self& operator<<(const char* str) {
+    if (str) {
       buffer_.append(str, strlen(str));
-    }
-    else
-    {
+    } else {
       buffer_.append("(null)", 6);
     }
     return *this;
   }
 
-  self& operator<<(const unsigned char* str)
-  {
+  self& operator<<(const unsigned char* str) {
     return operator<<(reinterpret_cast<const char*>(str));
   }
 
-  self& operator<<(const string& v)
-  {
+  self& operator<<(const string& v) {
     buffer_.append(v.c_str(), v.size());
     return *this;
   }
 
-  self& operator<<(const StringPiece& v)
-  {
+  self& operator<<(const StringPiece& v) {
     buffer_.append(v.data(), v.size());
     return *this;
   }
 
-  self& operator<<(const Buffer& v)
-  {
+  self& operator<<(const Buffer& v) {
     *this << v.toStringPiece();
     return *this;
   }
@@ -154,7 +134,7 @@ class LogStream : noncopyable
  private:
   void staticCheck();
 
-  template<typename T>
+  template <typename T>
   void formatInteger(T);
 
   Buffer buffer_;
@@ -162,10 +142,10 @@ class LogStream : noncopyable
   static const int kMaxNumericSize = 48;
 };
 
-class Fmt // : noncopyable
+class Fmt  // : noncopyable
 {
  public:
-  template<typename T>
+  template <typename T>
   Fmt(const char* fmt, T val);
 
   const char* data() const { return buf_; }
@@ -176,8 +156,7 @@ class Fmt // : noncopyable
   int length_;
 };
 
-inline LogStream& operator<<(LogStream& s, const Fmt& fmt)
-{
+inline LogStream& operator<<(LogStream& s, const Fmt& fmt) {
   s.append(fmt.data(), fmt.length());
   return s;
 }
