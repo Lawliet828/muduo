@@ -11,8 +11,6 @@
 #include <mutex>
 #include <vector>
 
-#include "muduo/base/BlockingQueue.h"
-#include "muduo/base/BoundedBlockingQueue.h"
 #include "muduo/base/CountDownLatch.h"
 #include "muduo/base/LogStream.h"
 #include "muduo/base/Thread.h"
@@ -29,11 +27,12 @@ class AsyncLogging : noncopyable {
     }
   }
 
+  // 供前端生产者线程调用（日志数据写到缓冲区）
   void append(const char* logline, int len);
 
   void start() {
     running_ = true;
-    thread_.start();
+    thread_.start(); // 日志线程启动
     latch_.wait();
   }
 
@@ -44,6 +43,7 @@ class AsyncLogging : noncopyable {
   }
 
  private:
+  // 供后端消费者线程调用（将数据写到日志文件）
   void threadFunc();
 
   typedef muduo::detail::FixedBuffer<muduo::detail::kLargeBuffer> Buffer;
