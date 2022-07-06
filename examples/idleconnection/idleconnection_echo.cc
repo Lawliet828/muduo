@@ -1,6 +1,3 @@
-#ifndef MUDUO_EXAMPLES_IDLECONNECTION_ECHO_H
-#define MUDUO_EXAMPLES_IDLECONNECTION_ECHO_H
-
 #include <assert.h>
 #include <stdio.h>
 
@@ -50,7 +47,7 @@ class EchoServer : public muduo::net::TcpServer {
 
   void onMessage(const muduo::net::TcpConnectionPtr& conn,
                  muduo::net::Buffer* buf, muduo::Timestamp time) {
-    string msg(buf->retrieveAllAsString());
+    std::string msg(buf->retrieveAllAsString());
     LOG_INFO << conn->name() << " echo " << msg.size() << " bytes at "
              << time.toString();
     conn->send(msg);
@@ -110,4 +107,15 @@ class EchoServer : public muduo::net::TcpServer {
   WeakConnectionList connectionBuckets_;
 };
 
-#endif  // MUDUO_EXAMPLES_IDLECONNECTION_ECHO_H
+int main(int argc, char* argv[]) {
+  EventLoop loop;
+  InetAddress listenAddr(2007);
+  int idleSeconds = 10;
+  if (argc > 1) {
+    idleSeconds = atoi(argv[1]);
+  }
+  LOG_INFO << "pid = " << getpid() << ", idle seconds = " << idleSeconds;
+  EchoServer server(&loop, listenAddr, idleSeconds);
+  server.start();
+  loop.loop();
+}
