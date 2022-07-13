@@ -24,12 +24,10 @@ class ThriftServer : boost::noncopyable,
                      public TServer
 {
  public:
-  template <typename ProcessorFactory>
-  ThriftServer(const boost::shared_ptr<ProcessorFactory>& processorFactory,
+  ThriftServer(const boost::shared_ptr<TProcessorFactory>& processorFactory,
                muduo::net::EventLoop* eventloop,
                const muduo::net::InetAddress& addr,
-               const muduo::string& name,
-               THRIFT_OVERLOAD_IF(ProcessorFactory, TProcessorFactory))
+               const muduo::string& name)
     : TServer(processorFactory),
       server_(eventloop, addr, name),
       numWorkerThreads_(0),
@@ -39,12 +37,10 @@ class ThriftServer : boost::noncopyable,
                                               this, muduo::_1));
   }
 
-  template <typename Processor>
-  ThriftServer(const boost::shared_ptr<Processor>& processor,
+  ThriftServer(const boost::shared_ptr<TProcessor>& processor,
                muduo::net::EventLoop* eventloop,
                const muduo::net::InetAddress& addr,
-               const muduo::string& name,
-               THRIFT_OVERLOAD_IF(Processor, TProcessor))
+               const muduo::string& name)
     : TServer(processor),
       server_(eventloop, addr, name),
       numWorkerThreads_(0),
@@ -54,13 +50,11 @@ class ThriftServer : boost::noncopyable,
                                               this, muduo::_1));
   }
 
-  template <typename ProcessorFactory>
-  ThriftServer(const boost::shared_ptr<ProcessorFactory>& processorFactory,
+  ThriftServer(const boost::shared_ptr<TProcessorFactory>& processorFactory,
                const boost::shared_ptr<TProtocolFactory>& protocolFactory,
                muduo::net::EventLoop* eventloop,
                const muduo::net::InetAddress& addr,
-               const muduo::string& name,
-               THRIFT_OVERLOAD_IF(ProcessorFactory, TProcessorFactory))
+               const muduo::string& name)
     : TServer(processorFactory),
       server_(eventloop, addr, name),
       numWorkerThreads_(0),
@@ -72,13 +66,11 @@ class ThriftServer : boost::noncopyable,
     setOutputProtocolFactory(protocolFactory);
   }
 
-  template <typename Processor>
-  ThriftServer(const boost::shared_ptr<Processor>& processor,
+  ThriftServer(const boost::shared_ptr<TProcessor>& processor,
                const boost::shared_ptr<TProtocolFactory>& protocolFactory,
                muduo::net::EventLoop* eventloop,
                const muduo::net::InetAddress& addr,
-               const muduo::string& name,
-               THRIFT_OVERLOAD_IF(Processor, TProcessor))
+               const muduo::string& name)
     : TServer(processor),
       server_(eventloop, addr, name),
       numWorkerThreads_(0),
@@ -90,14 +82,12 @@ class ThriftServer : boost::noncopyable,
     setOutputProtocolFactory(protocolFactory);
   }
 
-  template <typename ProcessorFactory>
-  ThriftServer(const boost::shared_ptr<ProcessorFactory>& processorFactory,
+  ThriftServer(const boost::shared_ptr<TProcessorFactory>& processorFactory,
                const boost::shared_ptr<TTransportFactory>& transportFactory,
                const boost::shared_ptr<TProtocolFactory>& protocolFactory,
                muduo::net::EventLoop* eventloop,
                const muduo::net::InetAddress& addr,
-               const muduo::string& name,
-               THRIFT_OVERLOAD_IF(ProcessorFactory, TProcessorFactory))
+               const muduo::string& name)
     : TServer(processorFactory),
       server_(eventloop, addr, name),
       numWorkerThreads_(0),
@@ -111,14 +101,12 @@ class ThriftServer : boost::noncopyable,
     setOutputProtocolFactory(protocolFactory);
   }
 
-  template <typename Processor>
-  ThriftServer(const boost::shared_ptr<Processor>& processor,
+  ThriftServer(const boost::shared_ptr<TProcessor>& processor,
                const boost::shared_ptr<TTransportFactory>& transportFactory,
                const boost::shared_ptr<TProtocolFactory>& protocolFactory,
                muduo::net::EventLoop* eventloop,
                const muduo::net::InetAddress& addr,
-               const muduo::string& name,
-               THRIFT_OVERLOAD_IF(Processor, TProcessor))
+               const muduo::string& name)
     : TServer(processor),
       server_(eventloop, addr, name),
       numWorkerThreads_(0),
@@ -132,16 +120,14 @@ class ThriftServer : boost::noncopyable,
     setOutputProtocolFactory(protocolFactory);
   }
 
-  template <typename ProcessorFactory>
-  ThriftServer(const boost::shared_ptr<ProcessorFactory>& processorFactory,
+  ThriftServer(const boost::shared_ptr<TProcessorFactory>& processorFactory,
                const boost::shared_ptr<TTransportFactory>& inputTransportFactory,
                const boost::shared_ptr<TTransportFactory>& outputTransportFactory,
                const boost::shared_ptr<TProtocolFactory>& inputProtocolFactory,
                const boost::shared_ptr<TProtocolFactory>& outputProtocolFactory,
                muduo::net::EventLoop* eventloop,
                const muduo::net::InetAddress& addr,
-               const muduo::string& name,
-               THRIFT_OVERLOAD_IF(ProcessorFactory, TProcessorFactory))
+               const muduo::string& name)
     : TServer(processorFactory),
       server_(eventloop, addr, name),
       numWorkerThreads_(0),
@@ -155,16 +141,14 @@ class ThriftServer : boost::noncopyable,
     setOutputProtocolFactory(outputProtocolFactory);
   }
 
-  template <typename Processor>
-  ThriftServer(const boost::shared_ptr<Processor>& processor,
+  ThriftServer(const boost::shared_ptr<TProcessor>& processor,
                const boost::shared_ptr<TTransportFactory>& inputTransportFactory,
                const boost::shared_ptr<TTransportFactory>& outputTransportFactory,
                const boost::shared_ptr<TProtocolFactory>& inputProtocolFactory,
                const boost::shared_ptr<TProtocolFactory>& outputProtocolFactory,
                muduo::net::EventLoop* eventloop,
                const muduo::net::InetAddress& addr,
-               const muduo::string& name,
-               THRIFT_OVERLOAD_IF(Processor, TProcessor))
+               const muduo::string& name)
     : TServer(processor),
       server_(eventloop, addr, name),
       numWorkerThreads_(0),
