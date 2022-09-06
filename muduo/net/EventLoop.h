@@ -36,8 +36,7 @@ class TimerQueue;
 /// Reactor, at most one per thread.
 ///
 /// This is an interface class, so don't expose too much details.
-class EventLoop : noncopyable
-{
+class EventLoop : noncopyable {
  public:
   typedef std::function<void()> Functor;
 
@@ -106,10 +105,8 @@ class EventLoop : noncopyable
   bool hasChannel(Channel* channel);
 
   // pid_t threadId() const { return threadId_; }
-  void assertInLoopThread()
-  {
-    if (!isInLoopThread())
-    {
+  void assertInLoopThread() {
+    if (!isInLoopThread()) {
       abortNotInLoopThread();
     }
   }
