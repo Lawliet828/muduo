@@ -60,7 +60,7 @@ void forkBench()
 class Bench
 {
  public:
-  Bench(int numThreads)
+  explicit Bench(int numThreads)
     : startLatch_(numThreads),
       stopLatch_(1)
   {

@@ -12,7 +12,7 @@
 class Test
 {
  public:
-  Test(int numThreads)
+  explicit Test(int numThreads)
     : latch_(numThreads)
   {
     for (int i = 0; i < numThreads; ++i)

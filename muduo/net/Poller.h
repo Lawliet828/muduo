@@ -29,7 +29,7 @@ class Poller : noncopyable {
  public:
   typedef std::vector<Channel*> ChannelList;
 
-  Poller(EventLoop* loop) : ownerLoop_(loop) {}
+  explicit Poller(EventLoop* loop) : ownerLoop_(loop) {}
 
   virtual ~Poller() = default;
 

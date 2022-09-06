@@ -30,7 +30,7 @@ extern const char kNoSolution[] = "NoSolution";
 class SudokuSolver
 {
  public:
-    SudokuSolver(int board[kCells])
+    explicit SudokuSolver(int board[kCells])
       : inout_(board),
         cur_node_(0)
     {

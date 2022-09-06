@@ -22,7 +22,7 @@ namespace net
 class BufferOutputStream : public google::protobuf::io::ZeroCopyOutputStream
 {
  public:
-  BufferOutputStream(Buffer* buf)
+  explicit BufferOutputStream(Buffer* buf)
     : buffer_(CHECK_NOTNULL(buf)),
       originalSize_(buffer_->readableBytes())
   {

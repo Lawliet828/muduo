@@ -12,7 +12,7 @@
 class Test
 {
  public:
-  Test(int numThreads)
+  explicit Test(int numThreads)
     : queue_(20),
       latch_(numThreads)
   {

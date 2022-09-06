@@ -25,7 +25,7 @@ namespace net {
 ///
 class PollPoller : public Poller {
  public:
-  PollPoller(EventLoop* loop);
+  explicit PollPoller(EventLoop* loop);
   ~PollPoller() override;
 
   Timestamp poll(int timeoutMs, ChannelList* activeChannels) override;

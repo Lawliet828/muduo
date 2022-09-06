@@ -3,7 +3,7 @@
 class SudokuStat : muduo::noncopyable
 {
  public:
-  SudokuStat(const ThreadPool& pool)
+  explicit SudokuStat(const ThreadPool& pool)
     : pool_(pool),
       lastSecond_(0),
       requests_(kSeconds),

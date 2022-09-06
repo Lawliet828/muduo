@@ -40,7 +40,7 @@ struct Comp
 {
   bool compareGmt;
 
-  Comp(bool gmt)
+  explicit Comp(bool gmt)
     : compareGmt(gmt)
   {
   }
@@ -104,7 +104,7 @@ namespace detail
 class File : noncopyable
 {
  public:
-  File(const char* file)
+  explicit File(const char* file)
     : fp_(::fopen(file, "rb"))
   {
   }

@@ -15,7 +15,7 @@ namespace muduo {
 
 class Exception : public std::exception {
  public:
-  Exception(string what)
+  explicit Exception(string what)
       : message_(std::move(what)),
         stack_(CurrentThread::stackTrace(/*demangle=*/false)) {}
   ~Exception() noexcept override = default;

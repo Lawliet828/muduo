@@ -17,7 +17,7 @@ bool g_verbose = false;
 // Many threads, one queue.
 class Bench {
  public:
-  Bench(int numThreads) : latch_(numThreads) {
+  explicit Bench(int numThreads) : latch_(numThreads) {
     threads_.reserve(numThreads);
     for (int i = 0; i < numThreads; ++i) {
       threads_.emplace_back(new std::thread(&Bench::threadFunc, this));

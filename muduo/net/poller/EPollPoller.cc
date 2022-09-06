@@ -169,6 +169,7 @@ void EPollPoller::removeChannel(Channel* channel)
   channel->set_index(kNew);
 }
 
+// 注册删除事件核心
 void EPollPoller::update(int operation, Channel* channel)
 {
   struct epoll_event event;
