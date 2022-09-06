@@ -11,16 +11,14 @@
 #ifndef MUDUO_NET_TCPSERVER_H
 #define MUDUO_NET_TCPSERVER_H
 
-#include "muduo/base/Types.h"
-#include "muduo/net/TcpConnection.h"
-
 #include <atomic>
 #include <map>
 
-namespace muduo
-{
-namespace net
-{
+#include "muduo/base/Types.h"
+#include "muduo/net/TcpConnection.h"
+
+namespace muduo {
+namespace net {
 
 class Acceptor;
 class EventLoop;
@@ -30,21 +28,17 @@ class EventLoopThreadPool;
 /// TCP server, supports single-threaded and thread-pool models.
 ///
 /// This is an interface class, so don't expose too much details.
-class TcpServer : noncopyable
-{
+class TcpServer : noncopyable {
  public:
   typedef std::function<void(EventLoop*)> ThreadInitCallback;
-  enum Option
-  {
+  enum Option {
     kNoReusePort,
     kReusePort,
   };
 
-  //TcpServer(EventLoop* loop, const InetAddress& listenAddr);
-  TcpServer(EventLoop* loop,
-            const InetAddress& listenAddr,
-            const string& nameArg,
-            Option option = kNoReusePort);
+  // TcpServer(EventLoop* loop, const InetAddress& listenAddr);
+  TcpServer(EventLoop* loop, const InetAddress& listenAddr,
+            const string& nameArg, Option option = kNoReusePort);
   ~TcpServer();  // force out-line dtor, for std::unique_ptr members.
 
   const string& ipPort() const { return ipPort_; }
@@ -62,11 +56,11 @@ class TcpServer : noncopyable
   /// - N means a thread pool with N threads, new connections
   ///   are assigned on a round-robin basis.
   void setThreadNum(int numThreads);
-  void setThreadInitCallback(const ThreadInitCallback& cb)
-  { threadInitCallback_ = cb; }
+  void setThreadInitCallback(const ThreadInitCallback& cb) {
+    threadInitCallback_ = cb;
+  }
   /// valid after calling start()
-  std::shared_ptr<EventLoopThreadPool> threadPool()
-  { return threadPool_; }
+  std::shared_ptr<EventLoopThreadPool> threadPool() { return threadPool_; }
 
   /// Starts the server if it's not listening.
   ///
@@ -77,19 +71,20 @@ class TcpServer : noncopyable
   /// Set connection callback.
   /// Not thread safe.
   // 设置连接到来或者连接关闭回调函数
-  void setConnectionCallback(const ConnectionCallback& cb)
-  { connectionCallback_ = cb; }
+  void setConnectionCallback(const ConnectionCallback& cb) {
+    connectionCallback_ = cb;
+  }
 
   /// Set message callback.
   /// Not thread safe.
   // 设置消息到来回调函数
-  void setMessageCallback(const MessageCallback& cb)
-  { messageCallback_ = cb; }
+  void setMessageCallback(const MessageCallback& cb) { messageCallback_ = cb; }
 
   /// Set write complete callback.
   /// Not thread safe.
-  void setWriteCompleteCallback(const WriteCompleteCallback& cb)
-  { writeCompleteCallback_ = cb; }
+  void setWriteCompleteCallback(const WriteCompleteCallback& cb) {
+    writeCompleteCallback_ = cb;
+  }
 
  private:
   /// Not thread safe, but in loop
@@ -102,10 +97,10 @@ class TcpServer : noncopyable
   // 连接的名称 => TcpConnectionPtr
   typedef std::map<string, TcpConnectionPtr> ConnectionMap;
 
-  EventLoop* loop_;  // the acceptor loop
-  const string ipPort_; // 服务端口
-  const string name_; // 服务名
-  std::unique_ptr<Acceptor> acceptor_; // avoid revealing Acceptor
+  EventLoop* loop_;                     // the acceptor loop
+  const string ipPort_;                 // 服务端口
+  const string name_;                   // 服务名
+  std::unique_ptr<Acceptor> acceptor_;  // avoid revealing Acceptor
   std::shared_ptr<EventLoopThreadPool> threadPool_;
   ConnectionCallback connectionCallback_;
   MessageCallback messageCallback_;
@@ -113,8 +108,8 @@ class TcpServer : noncopyable
   ThreadInitCallback threadInitCallback_;
   std::atomic<int32_t> started_;
   // always in loop thread
-  int nextConnId_; // 下一个连接ID
-  ConnectionMap connections_; // 连接列表
+  int nextConnId_;             // 下一个连接ID
+  ConnectionMap connections_;  // 连接列表
 };
 
 }  // namespace net

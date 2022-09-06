@@ -15,7 +15,6 @@ endif()
 
 set(CXX_FLAGS
  -g
- # -DVALGRIND
  -D_FILE_OFFSET_BITS=64
  -Wall
  -Wextra

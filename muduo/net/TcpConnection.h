@@ -11,23 +11,21 @@
 #ifndef MUDUO_NET_TCPCONNECTION_H
 #define MUDUO_NET_TCPCONNECTION_H
 
-#include "muduo/base/noncopyable.h"
-#include "muduo/base/StringPiece.h"
-#include "muduo/base/Types.h"
-#include "muduo/net/Callbacks.h"
-#include "muduo/net/Buffer.h"
-#include "muduo/net/InetAddress.h"
-
 #include <any>
 #include <memory>
+
+#include "muduo/base/StringPiece.h"
+#include "muduo/base/Types.h"
+#include "muduo/base/noncopyable.h"
+#include "muduo/net/Buffer.h"
+#include "muduo/net/Callbacks.h"
+#include "muduo/net/InetAddress.h"
 
 // struct tcp_info is in <netinet/tcp.h>
 struct tcp_info;
 
-namespace muduo
-{
-namespace net
-{
+namespace muduo {
+namespace net {
 
 class Channel;
 class EventLoop;
@@ -38,17 +36,13 @@ class Socket;
 ///
 /// This is an interface class, so don't expose too much details.
 class TcpConnection : noncopyable,
-                      public std::enable_shared_from_this<TcpConnection>
-{
+                      public std::enable_shared_from_this<TcpConnection> {
  public:
   /// Constructs a TcpConnection with a connected sockfd
   ///
   /// User should not create this object.
-  TcpConnection(EventLoop* loop,
-                const string& name,
-                int sockfd,
-                const InetAddress& localAddr,
-                const InetAddress& peerAddr);
+  TcpConnection(EventLoop* loop, const string& name, int sockfd,
+                const InetAddress& localAddr, const InetAddress& peerAddr);
   ~TcpConnection();
 
   EventLoop* getLoop() const { return loop_; }
@@ -74,42 +68,42 @@ class TcpConnection : noncopyable,
   // reading or not
   void startRead();
   void stopRead();
-  bool isReading() const { return reading_; }; // NOT thread safe, may race with start/stopReadInLoop
+  bool isReading() const {
+    return reading_;
+  };  // NOT thread safe, may race with start/stopReadInLoop
 
-  void setContext(const std::any& context)
-  { context_ = context; }
+  void setContext(const std::any& context) { context_ = context; }
 
-  const std::any& getContext() const
-  { return context_; }
+  const std::any& getContext() const { return context_; }
 
-  std::any* getMutableContext()
-  { return &context_; }
+  std::any* getMutableContext() { return &context_; }
 
-  void setConnectionCallback(const ConnectionCallback& cb)
-  { connectionCallback_ = cb; }
+  void setConnectionCallback(const ConnectionCallback& cb) {
+    connectionCallback_ = cb;
+  }
 
-  void setMessageCallback(const MessageCallback& cb)
-  { messageCallback_ = cb; }
+  void setMessageCallback(const MessageCallback& cb) { messageCallback_ = cb; }
 
-  void setWriteCompleteCallback(const WriteCompleteCallback& cb)
-  { writeCompleteCallback_ = cb; }
+  void setWriteCompleteCallback(const WriteCompleteCallback& cb) {
+    writeCompleteCallback_ = cb;
+  }
 
-  void setHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t highWaterMark)
-  { highWaterMarkCallback_ = cb; highWaterMark_ = highWaterMark; }
+  void setHighWaterMarkCallback(const HighWaterMarkCallback& cb,
+                                size_t highWaterMark) {
+    highWaterMarkCallback_ = cb;
+    highWaterMark_ = highWaterMark;
+  }
 
   /// Advanced interface
-  Buffer* inputBuffer()
-  { return &inputBuffer_; }
+  Buffer* inputBuffer() { return &inputBuffer_; }
 
-  Buffer* outputBuffer()
-  { return &outputBuffer_; }
+  Buffer* outputBuffer() { return &outputBuffer_; }
 
   /// Internal use only.
-  void setCloseCallback(const CloseCallback& cb)
-  { closeCallback_ = cb; }
+  void setCloseCallback(const CloseCallback& cb) { closeCallback_ = cb; }
 
   // called when TcpServer accepts a new connection
-  void connectEstablished();   // should be called only once
+  void connectEstablished();  // should be called only once
   // called when TcpServer has removed me from its map
   void connectDestroyed();  // should be called only once
 
@@ -131,8 +125,8 @@ class TcpConnection : noncopyable,
   void stopReadInLoop();
 
   EventLoop* loop_;
-  const string name_; // 连接名
-  StateE state_;  // FIXME: use atomic variable
+  const string name_;  // 连接名
+  StateE state_;       // FIXME: use atomic variable
   bool reading_;
   // we don't expose those classes to client.
   std::unique_ptr<Socket> socket_;
@@ -148,13 +142,13 @@ class TcpConnection : noncopyable,
    * 如果对等方接收不及时, 受到通告窗口的控制, 内核发送缓冲区不足,
    * 这个时候, 就会将用户数据添加到应用层发送缓冲区, 可能会撑爆output buffer
    * 解决方法就是, 调整发送频率, 关注writeCompleteCallback_
-   * 
+   *
    * outputBuffer_被清空也会回调该函数，可以理解为低水位标回调函数
    */
   WriteCompleteCallback writeCompleteCallback_;
   /**
    * 高水位标回调函数
-   * 
+   *
    * outputBuffer_撑到一定程度时, 就会调用该函数
    * 意味着对等方接收不及时
    */
@@ -162,8 +156,8 @@ class TcpConnection : noncopyable,
   CloseCallback closeCallback_;
   size_t highWaterMark_;
   Buffer inputBuffer_;
-  Buffer outputBuffer_; // FIXME: use list<Buffer> as output buffer.
-  std::any context_; // 连接对象可以绑定一个未知类型的上下文对象
+  Buffer outputBuffer_;  // FIXME: use list<Buffer> as output buffer.
+  std::any context_;  // 连接对象可以绑定一个未知类型的上下文对象
   // FIXME: creationTime_, lastReceiveTime_
   //        bytesReceived_, bytesSent_
 };
