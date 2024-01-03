@@ -14,6 +14,7 @@
 
 #include <netdb.h>
 #include <netinet/in.h>
+#include <stddef.h>  // offsetof
 
 // INADDR_ANY use (type)value casting.
 #pragma GCC diagnostic ignored "-Wold-style-cast"
