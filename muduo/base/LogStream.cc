@@ -42,6 +42,7 @@ static_assert(sizeof(digits) == 20, "wrong number of digits");
 const char digitsHex[] = "0123456789ABCDEF";
 static_assert(sizeof digitsHex == 17, "wrong number of digitsHex");
 
+// https://github.com/fmtlib/format-benchmark/blob/master/src/itoa-benchmark/mwilson.cpp
 // Efficient Integer to String Conversions, by Matthew Wilson.
 template<typename T>
 size_t convert(char buf[], T value)
@@ -204,13 +205,6 @@ std::string formatIEC(int64_t s)
 }
 
 }  // namespace muduo
-
-template<int SIZE>
-const char* FixedBuffer<SIZE>::debugString()
-{
-  *cur_ = '\0';
-  return data_;
-}
 
 void LogStream::staticCheck()
 {

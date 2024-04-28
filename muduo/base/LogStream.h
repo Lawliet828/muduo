@@ -3,8 +3,7 @@
 //
 // Author: Shuo Chen (chenshuo at chenshuo dot com)
 
-#ifndef MUDUO_BASE_LOGSTREAM_H
-#define MUDUO_BASE_LOGSTREAM_H
+#pragma once
 
 #include <assert.h>
 #include <string.h>  // memcpy
@@ -48,7 +47,10 @@ class FixedBuffer : noncopyable {
   void bzero() { memZero(data_, sizeof data_); }
 
   // for used by GDB
-  const char* debugString();
+  const char* debugString() {
+    *cur_ = '\0';
+    return data_;
+  }
   // for used by unit test
   string toString() const { return string(data_, length()); }
   StringPiece toStringPiece() const { return StringPiece(data_, length()); }
@@ -172,5 +174,3 @@ string formatSI(int64_t n);
 string formatIEC(int64_t n);
 
 }  // namespace muduo
-
-#endif  // MUDUO_BASE_LOGSTREAM_H
