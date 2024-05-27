@@ -52,7 +52,7 @@ class FixedBuffer : noncopyable {
     return data_;
   }
   // for used by unit test
-  string toString() const { return string(data_, length()); }
+  std::string toString() const { return std::string(data_, length()); }
   StringPiece toStringPiece() const { return StringPiece(data_, length()); }
 
  private:
