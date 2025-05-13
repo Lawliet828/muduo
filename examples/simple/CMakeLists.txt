@@ -7,7 +7,7 @@ target_link_libraries(simple_daytime muduo_net)
 add_executable(simple_discard discard/main.cc)
 target_link_libraries(simple_discard muduo_net)
 
-add_executable(simple_echo echo/main.cc)
+add_executable(simple_echo ./echo.cc)
 target_link_libraries(simple_echo muduo_net)
 
 add_executable(simple_time time/main.cc)
