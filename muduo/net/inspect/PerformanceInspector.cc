@@ -8,6 +8,7 @@
 //
 
 #include "muduo/net/inspect/PerformanceInspector.h"
+#include "muduo/base/CurrentThread.h"
 #include "muduo/base/FileUtil.h"
 #include "muduo/base/LogStream.h"
 #include "muduo/base/ProcessInfo.h"

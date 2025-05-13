@@ -1,6 +1,5 @@
-#!/bin/sh
-
-set -x
+#!/bin/bash
+set -euo pipefail
 
 SOURCE_DIR=`pwd`
 BUILD_DIR=${BUILD_DIR:-../build}
@@ -17,7 +16,7 @@ mkdir -p $BUILD_DIR/$BUILD_TYPE-cpp17 \
            -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
            $SOURCE_DIR \
-  && make $*
+  && make -j 8
 
 # Use the following command to run all the unit tests
 # at the dir $BUILD_DIR/$BUILD_TYPE :
