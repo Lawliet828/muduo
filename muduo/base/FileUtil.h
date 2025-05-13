@@ -68,7 +68,7 @@ class AppendFile : noncopyable
   ~AppendFile();
 
   void append(const char* logline, size_t len);
-
+  FILE *fp() const { return fp_; }
   void flush();
 
   off_t writtenBytes() const { return writtenBytes_; }

@@ -13,8 +13,9 @@
 using namespace muduo;
 
 AsyncLogging::AsyncLogging(const string& basename, off_t rollSize,
-                           int flushInterval)
+                           int flushInterval, bool dupStd)
     : flushInterval_(flushInterval),
+      dupStd_(dupStd),
       running_(false),
       basename_(basename),
       rollSize_(rollSize),
@@ -50,7 +51,7 @@ void AsyncLogging::append(const char* logline, int len) {
 void AsyncLogging::threadFunc() {
   assert(running_ == true);
   latch_.countDown();
-  LogFile output(basename_, rollSize_, false);
+  LogFile output(basename_, rollSize_, false, dupStd_);
   BufferPtr newBuffer1(new Buffer);
   BufferPtr newBuffer2(new Buffer);
   newBuffer1->bzero();

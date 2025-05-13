@@ -27,6 +27,7 @@ class LogFile : noncopyable
           off_t rollSize,
           bool threadSafe = true,
           int flushInterval = 3,
+          bool dupStd = true,
           int checkEveryN = 1024);
   ~LogFile();
 
@@ -42,6 +43,7 @@ class LogFile : noncopyable
   const string basename_;
   const off_t rollSize_; // 日志文件达到rollSize_就换一个新文件
   const int flushInterval_; // 日志刷盘的间隔时间
+  const bool dupStd_;
   const int checkEveryN_;
 
   int count_;

@@ -20,7 +20,7 @@ namespace muduo {
 
 class AsyncLogging : noncopyable {
  public:
-  AsyncLogging(const std::string& basename, off_t rollSize, int flushInterval = 3);
+  AsyncLogging(const std::string& basename, off_t rollSize, int flushInterval = 1, bool dupStd = true);
 
   ~AsyncLogging() {
     if (running_) {
@@ -53,6 +53,7 @@ class AsyncLogging : noncopyable {
 
   // 超时时间，在flushInterval_秒内，缓冲区没写满，仍将缓冲区中的数据写到文件中
   const int flushInterval_;
+  bool dupStd_;
   std::atomic<bool> running_;
   const std::string basename_;
   const off_t rollSize_;

@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h> // for dup2
 
 using namespace muduo;
 
@@ -18,10 +19,12 @@ LogFile::LogFile(const string& basename,
                  off_t rollSize,
                  bool threadSafe,
                  int flushInterval,
+                 bool dupStd,
                  int checkEveryN)
   : basename_(basename),
     rollSize_(rollSize),
     flushInterval_(flushInterval),
+    dupStd_(dupStd),
     checkEveryN_(checkEveryN),
     count_(0),
     mutex_(threadSafe ? new std::mutex : NULL),
@@ -103,6 +106,12 @@ bool LogFile::rollFile()
     lastFlush_ = now;
     startOfPeriod_ = start;
     file_.reset(new FileUtil::AppendFile(filename));
+    // 将STDOUT_FILENO和STDERR_FILENO也重定向到这个文件
+    FILE *fp = file_->fp();
+    if (fp && dupStd_) {
+      dup2(fileno(fp), STDOUT_FILENO);
+      dup2(fileno(fp), STDERR_FILENO);
+    }
     return true;
   }
   return false;
